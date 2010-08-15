@@ -100,20 +100,24 @@
        (updated-heading  315 45))))
 
 (defn lifted-tack [boat]
-  "determines which tack will get us closer to the mark"
+  "determines which tack will get us closer to the mark
+
+   it does this by extrapolating how far from the mark you would be if
+   you stayed on each tack for 10 * the boat movement figure, maybe it
+   would be better to just compare the mark angle to the pointing
+   angle???"
   (let [pos     ((boat :turtle) :position)
         dest    (boat :destination)
         dir     ((boat :turtle) :direction)
         tack-a  (-c (-c 180 wind-direction) pointing-angle)
-        tack-b  (+c (-c 180 wind-direction) pointing-angle)]
-    (let [tack-a-pos (move-point-dir pos tack-a (* 10 boat-movement))
-          tack-b-pos (move-point-dir pos tack-b (* 10 boat-movement))]
-      (let [tack-a-dist (point-distance tack-a-pos dest)
-            tack-b-dist (point-distance tack-b-pos dest)]
-        (println tack-a-dist tack-b-pos)
-        (if (> tack-a-dist tack-b-dist)
-          tack-b
-          tack-a)))))
+        tack-b  (+c (-c 180 wind-direction) pointing-angle)
+        tack-a-pos (move-point-dir pos tack-a (* 10 boat-movement))
+        tack-b-pos (move-point-dir pos tack-b (* 10 boat-movement))
+        tack-a-dist (point-distance tack-a-pos dest)
+        tack-b-dist (point-distance tack-b-pos dest)]
+    (if (> tack-a-dist tack-b-dist)
+      tack-b
+      tack-a)))
 
 (deftest test-lifted-tack
   (is (= 45
@@ -135,6 +139,7 @@
   (if (< destination-resolution
          (point-distance dest pos))
     (let [mark-bearing (bearing pos dest)]
+      
       (if (and (= dir bearing) (can-point bearing))
         ;; if we are pointing at the mark and we can point that way,
         ;; go towards it
