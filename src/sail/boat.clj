@@ -105,7 +105,21 @@
    it does this by extrapolating how far from the mark you would be if
    you stayed on each tack for 10 * the boat movement figure, maybe it
    would be better to just compare the mark angle to the pointing
-   angle???"
+   angle???
+
+   I'm worried that this function could end up oscilating very quickly
+   so that the boat tacks back and forth without putting much time in
+   on any one tack
+
+   I think I could make it better by taking into account the current
+   position, and how long we expect it to take to tack over to the
+   other position
+
+   then it becomes a comparison not of which tack will get us closer
+   to the mark, but which course of actions in t+ x will get us closer
+   to the mark
+
+"
   (let [pos     ((boat :turtle) :position)
         dest    (boat :destination)
         dir     ((boat :turtle) :direction)
