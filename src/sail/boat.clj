@@ -92,11 +92,11 @@
   "returns the angle that should be turned to point at mark "
   (let [turn-needed (angle-diff current-heading mark-bearing)]
   (if (> 0 turn-needed)
-    (- current-heading boat-rotation)
-    (+ current-heading boat-rotation))))
+    (- 0 boat-rotation)
+     boat-rotation)))
 
 (deftest test-updated-heading
-  (is (= 316
+  (is (= 1
        (updated-heading  315 45))))
 
 (defn lifted-tack [boat]
@@ -132,20 +132,27 @@
 
   
      
-(defn move-boat [boat]
+(defn boat-turn [boat]
   (let [pos     ((boat :turtle) :position)
         dest    (boat :destination)
         dir     ((boat :turtle) :direction)]
   (if (< destination-resolution
          (point-distance dest pos))
+    ;; if we aren't at the mark
     (let [mark-bearing (bearing pos dest)]
-      
-      (if (and (= dir bearing) (can-point bearing))
-        ;; if we are pointing at the mark and we can point that way,
-        ;; go towards it
-        (b-forward boat boat-movement)
-        ;; otherwise let's try to head towards the mark
-        (let [desired-heading  8]
-        (if (can-point) 0 1)))))))
-      
+      (if (can-point mark-bearing)
+        ;; if we can go straight to the mark we have it easy
+        (if (= dir mark-bearing)
+          ;; if we are pointing at the mark, go towards it!
+          (b-forward boat boat-movement)
+          ;; let's start turning towards the mark
+          (b-clockwise boat (updated-heading dir mark-bearing)))
+        ;; aha life is interesting, the mark is upwind of us
+        (let [lifted-heading (lifted-tack boat)]
+          (if (= dir lifted-heading)
+            ;; if we are on the lifted-tack now, let's go forward
+            (b-forward boat boat-movement)
+            ;; otherwise, let's start turning towards the mark
+            (b-clockwise boat (updated-heading dir lifted-heading)))))))))
+
   
