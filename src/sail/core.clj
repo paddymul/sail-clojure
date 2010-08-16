@@ -1,4 +1,3 @@
-
  (ns sail.core
   (:use
    ;;[rosado.processing]

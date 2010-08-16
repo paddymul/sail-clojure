@@ -104,6 +104,33 @@
                      :position  {:x 100 :y 100})
             10))))))
 
+
+(comment
+  " We will know that we have rounded a mark when the bearing from the
+  boat to the mark is 180 from the bearing from that mark to the
+  previous mark
+
+  Look at the following image.  M2 is the mark we care about M1 is the
+  previous mark.  B is the boat.  B has now cleared the mark.  I'm not
+  sure how to handle cases where B crosses 180 without touching it.
+
+  
+
+
+            B
+             \\
+               M2
+
+
+       M3              M1
+
+      Thinking about this problem prompted thought about defining a
+      360 penalty.  the tracking for the 360 penalty must occur
+      without rounding any marks
+
+"
+
+  )
 (def destination-resolution 5)
 (def boat-movement 5)
 (def boat-rotation 1)
