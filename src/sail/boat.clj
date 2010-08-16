@@ -61,22 +61,51 @@
 
 
 (defn b-forward [boat distance]
-  (mk-boat
-   :destination (boat :destination)
-   :turtle (forward (boat :turtle) distance)))
+  (let [n-turtle (forward (boat :turtle) distance)
+        position (:position n-turtle)
+        direction (:direction n-turtle)
+        n-boat     (mk-boat
+                    :destination (boat :destination)
+                    :position (:position n-turtle)
+                    :direction (:direction n-turtle))
+        ]
+    n-boat))
 
 (defn b-clockwise [boat delta-angle]
-  (mk-boat
-   :destination (boat :destination)
-   :turtle (clockwise (boat :turtle) delta-angle)))
+  (let [n-turtle (clockwise (boat :turtle) delta-angle)
+        position (:position n-turtle)
+        direction (:direction n-turtle)
+        n-boat     (mk-boat
+                    :destination (boat :destination)
+                    :position (:position n-turtle)
+                    :direction (:direction n-turtle))
+        ]
+    n-boat))
+
 
 (defn b-anti-clockwise [boat delta-angle]
-  (mk-boat
-   :destination (boat :destination)
-   :turtle (anti-clockwise (boat :turtle) delta-angle)))
-  
+  (let [n-turtle (anti-clockwise (boat :turtle) delta-angle)
+        position (:position n-turtle)
+        direction (:direction n-turtle)
+        n-boat     (mk-boat
+                    :destination (boat :destination)
+                    :position (:position n-turtle)
+                    :direction (:direction n-turtle))
+        ]
+    n-boat))
+
+
+(deftest b-tests
+  (is (= {:x 110 :y 100}
+         (:position
+          (:turtle
+           (b-forward
+            (mk-boat :direction 90
+                     :position  {:x 100 :y 100})
+            10))))))
+
 (def destination-resolution 5)
-(def boat-movement 10)
+(def boat-movement 5)
 (def boat-rotation 1)
 
 (comment
@@ -91,13 +120,13 @@
 (defn updated-heading [current-heading mark-bearing]
   "returns the angle that should be turned to point at mark "
   (let [turn-needed (angle-diff current-heading mark-bearing)]
-  (if (> 0 turn-needed)
-    (- 0 boat-rotation)
-     boat-rotation)))
+    (if (> 0 turn-needed)
+      (- 0 boat-rotation)
+      boat-rotation)))
 
 (deftest test-updated-heading
   (is (= 1
-       (updated-heading  315 45))))
+         (updated-heading  315 45))))
 
 (defn lifted-tack [boat]
   "determines which tack will get us closer to the mark
@@ -144,29 +173,38 @@
                    :position {:x 150 :y 50}))))
   )
 
+(defn pcomment [comments]
+  ;;(println comments)
   
-     
+  )
+
 (defn boat-turn [boat]
   (let [pos     ((boat :turtle) :position)
         dest    (boat :destination)
         dir     ((boat :turtle) :direction)]
-  (if (< destination-resolution
-         (point-distance dest pos))
-    ;; if we aren't at the mark
-    (let [mark-bearing (bearing pos dest)]
-      (if (can-point mark-bearing)
-        ;; if we can go straight to the mark we have it easy
-        (if (= dir mark-bearing)
-          ;; if we are pointing at the mark, go towards it!
-          (b-forward boat boat-movement)
-          ;; let's start turning towards the mark
-          (b-clockwise boat (updated-heading dir mark-bearing)))
-        ;; aha life is interesting, the mark is upwind of us
-        (let [lifted-heading (lifted-tack boat)]
-          (if (= dir lifted-heading)
-            ;; if we are on the lifted-tack now, let's go forward
-            (b-forward boat boat-movement)
-            ;; otherwise, let's start turning towards the mark
-            (b-clockwise boat (updated-heading dir lifted-heading)))))))))
+    (if (< destination-resolution
+           (point-distance dest pos))
+      ;; if we aren't at the mark
+      (let [mark-bearing (bearing pos dest)]
+        (if (can-point mark-bearing)
+          (do 
+            (pcomment "if we can go straight to the mark we have it easy")
+            (if (= dir mark-bearing)
+              (do
+                (pcomment "if we are pointing at the mark, go towards it!")
+                (b-forward boat boat-movement))
+              (do
+                (println "mark-bearing direction"  mark-bearing dir)
+                (pcomment "let's start turning towards the mark")
+                (b-clockwise boat (updated-heading dir mark-bearing)))))
+          (do
+            (pcomment "aha life is interesting, the mark is upwind of us")
+            (let [lifted-heading (lifted-tack boat)]
+              (if (= dir lifted-heading)
+                (do
+                  (pcomment "if we are on the lifted-tack now, let's go forward")
+                  (b-forward boat boat-movement))
+                (do
+                  (pcomment "otherwise, let's start turning towards the mark")
+                  (b-clockwise boat (updated-heading dir lifted-heading)))))))))))
 
-  
