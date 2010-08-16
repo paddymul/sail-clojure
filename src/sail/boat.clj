@@ -130,6 +130,10 @@
 
 
 (def tack-outlook 500)
+(defn pcomment [& comments]
+  ;;(apply println comments)
+  )
+
 (defn lifted-tack [boat]
   "determines which tack will get us closer to the mark
 
@@ -159,32 +163,35 @@
         tack-a-turn (clojure.contrib.math/abs (angle-diff  dir tack-a))
         tack-b-turn (clojure.contrib.math/abs (angle-diff  dir tack-b))
         closer-tack (if (< tack-a-turn tack-b-turn)
-                       tack-a tack-b)
+                      tack-a tack-b)
         mark-distance (point-distance pos dest)
         tack-outlook  (+ mark-distance 20)
         tack-a-pos (move-point-dir
                     pos tack-a
-                    (* (- tack-outlook tack-a-turn) boat-movement))
+                    (* (* boat-rotation (- tack-outlook tack-a-turn))
+                       boat-movement))
         tack-b-pos (move-point-dir
                     pos tack-b
-                    (* (- tack-outlook tack-b-turn) boat-movement))
+                    (* (* boat-rotation (- tack-outlook tack-b-turn))
+                       boat-movement))
+
 
         tack-a-dist (point-distance tack-a-pos dest)
         tack-b-dist (point-distance tack-b-pos dest)
         tack-dist-diff  (clojure.contrib.math/abs (- tack-a-dist tack-b-dist))]
-    (println "tack-a-turn tack-a-dist" tack-a-turn tack-a-dist)
-    (println "tack-b-turn tack-b-dist tack-dist-diff"
-             tack-b-turn tack-b-dist tack-dist-diff)
+    (pcomment "tack-a-turn tack-a-dist" tack-a-turn tack-a-dist)
+    (pcomment "tack-b-turn tack-b-dist tack-dist-diff"
+              tack-b-turn tack-b-dist tack-dist-diff)
 
     (if (> 5 (clojure.contrib.math/abs (- tack-a-dist tack-b-dist)))
       (do
-        (println " chosing closer-tack" closer-tack)
+        (pcomment " chosing closer-tack" closer-tack)
         closer-tack)
       (do
-        (println "tack-a-dist tack-b-dist" tack-a-dist tack-b-dist)
-        (if (<= tack-a-dist tack-b-dist)
-          tack-b
-          tack-ay)))))
+        (pcomment "tack-a-dist tack-b-dist" tack-a-dist tack-b-dist)
+        (if (>= tack-a-dist tack-b-dist)
+          tack-a
+          tack-b)))))
 
 (deftest test-lifted-tack
   (is (= 45
@@ -197,10 +204,6 @@
                    :position {:x 150 :y 50}))))
   )
 
-(defn pcomment [comments]
-(println comments)
-  
-  )
 
 (defn boat-turn [boat]
   (let [pos     ((boat :turtle) :position)
@@ -216,21 +219,59 @@
             (if (> 3 (clojure.contrib.math/abs (angle-diff dir mark-bearing)))
               (do
                 (pcomment "if we are pointing at the mark, go towards it!")
-                (b-forward boat boat-movement))
+                0)
               (do
                 (println "mark-bearing direction"  mark-bearing dir)
                 (pcomment "let's start turning towards the mark")
-                (b-clockwise boat (updated-heading dir mark-bearing)))))
+                ;; hopefully the signs are correct
+                (updated-heading dir mark-bearing))))
           (do
             (pcomment "aha life is interesting, the mark is upwind of us")
             (let [lifted-heading (lifted-tack boat)]
               (if (= dir lifted-heading)
                 (do
                   (pcomment "if we are on the lifted-tack now, let's go forward")
-                  (b-forward boat boat-movement))
+                  0)
                 (do
                   (pcomment "otherwise, let's start turning towards the mark")
-                  (b-clockwise boat (updated-heading dir lifted-heading))))))))
-      boat
-      )))
+                  (updated-heading dir lifted-heading)))))))
+      ;; we are at the mark
+      ;; for now I will just point the boat at the wind
+      ;;
+      (if (= dir (-c 180 wind-direction))
+        0 ;; if we are pointing at the wind stay there
+        -1 ;; otherwise turn into the wind, to starboard)
+        ))))
 
+
+(defn boat-physics [boat rudder-angle]
+  ;; a rudder angle of less than 0 means that the trailing edge of
+  ;; the rudder is pointing to starboard, this will make the boat
+  ;; turn to starboard
+  ;;
+  ;;  for non-sailors, when looking towards the bow (front) of the
+  ;;  boat starboard is on your right, port is on your left
+  ;;
+  ;;
+  ;;  in the folowing picture there is a negative rudder angle
+  ;;
+  ;;         ^
+  ;;       /   \
+  ;;       |   |
+  ;;       |   |
+  ;;       |   |
+  ;;       =====
+  ;;         \
+  ;;    
+  (if (= rudder-angle 0)
+    ;; aha this is wrong, I need a test to make sure we are not in irons
+    (b-forward boat boat-movement)
+    (let [turn-amount
+          (if (< 0 rudder-angle)
+            boat-rotation
+            (- 0 boat-rotation))]
+      (pcomment "turn-amount" turn-amount)
+      (b-clockwise boat turn-amount))))
+
+(defn update-boat [boat]
+  (boat-physics boat (boat-turn boat)))
