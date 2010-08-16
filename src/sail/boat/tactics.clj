@@ -1,4 +1,4 @@
-(ns sail.boat
+(ns sail.boat.tactics
   (:use
    ;;[rosado.processing]
    [logo.macrology]
@@ -11,8 +11,11 @@
    [clojure.contrib.def]
    [logo.core]
    [logo.math]
-   
+   [sail.boat.utility :only [mk-boat]]
    ))
+(defn pcomment [& comments]
+  ;;(apply println comments)
+  )
 
 (def wind-direction 180)
 ;; boat stuff
@@ -45,64 +48,7 @@
   (assert-cannot-sail  180 320)
   (assert-cannot-sail  180 40))
 
-(defstruct boat :destination :turtle)
 
-(defnk mk-boat [:destination {:x 50 :y 0}
-                :position {:x 75 :y 100}
-                :direction 0]
-  (struct boat
-          destination
-          (mk-turtle :position position :direction direction)))
-
-
-(println (mk-boat))
-(println (mk-boat :destination {:x 0 :y 0}))
-
-
-
-(defn b-forward [boat distance]
-  (let [n-turtle (forward (boat :turtle) distance)
-        position (:position n-turtle)
-        direction (:direction n-turtle)
-        n-boat     (mk-boat
-                    :destination (boat :destination)
-                    :position (:position n-turtle)
-                    :direction (:direction n-turtle))
-        ]
-    n-boat))
-
-(defn b-clockwise [boat delta-angle]
-  (let [n-turtle (clockwise (boat :turtle) delta-angle)
-        position (:position n-turtle)
-        direction (:direction n-turtle)
-        n-boat     (mk-boat
-                    :destination (boat :destination)
-                    :position (:position n-turtle)
-                    :direction (:direction n-turtle))
-        ]
-    n-boat))
-
-
-(defn b-anti-clockwise [boat delta-angle]
-  (let [n-turtle (anti-clockwise (boat :turtle) delta-angle)
-        position (:position n-turtle)
-        direction (:direction n-turtle)
-        n-boat     (mk-boat
-                    :destination (boat :destination)
-                    :position (:position n-turtle)
-                    :direction (:direction n-turtle))
-        ]
-    n-boat))
-
-
-(deftest b-tests
-  (is (= {:x 110 :y 100}
-         (:position
-          (:turtle
-           (b-forward
-            (mk-boat :direction 90
-                     :position  {:x 100 :y 100})
-            10))))))
 
 (def destination-resolution 5)
 (def boat-movement 5)
@@ -130,9 +76,6 @@
 
 
 (def tack-outlook 500)
-(defn pcomment [& comments]
-  ;;(apply println comments)
-  )
 
 (defn lifted-tack [boat]
   "determines which tack will get us closer to the mark
@@ -243,35 +186,3 @@
         -1 ;; otherwise turn into the wind, to starboard)
         ))))
 
-
-(defn boat-physics [boat rudder-angle]
-  ;; a rudder angle of less than 0 means that the trailing edge of
-  ;; the rudder is pointing to starboard, this will make the boat
-  ;; turn to starboard
-  ;;
-  ;;  for non-sailors, when looking towards the bow (front) of the
-  ;;  boat starboard is on your right, port is on your left
-  ;;
-  ;;
-  ;;  in the folowing picture there is a negative rudder angle
-  ;;
-  ;;         ^
-  ;;       /   \
-  ;;       |   |
-  ;;       |   |
-  ;;       |   |
-  ;;       =====
-  ;;         \
-  ;;    
-  (if (= rudder-angle 0)
-    ;; aha this is wrong, I need a test to make sure we are not in irons
-    (b-forward boat boat-movement)
-    (let [turn-amount
-          (if (< 0 rudder-angle)
-            boat-rotation
-            (- 0 boat-rotation))]
-      (pcomment "turn-amount" turn-amount)
-      (b-clockwise boat turn-amount))))
-
-(defn update-boat [boat]
-  (boat-physics boat (boat-turn boat)))
