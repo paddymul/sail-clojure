@@ -160,7 +160,64 @@
         tack-b-dist (point-distance tack-b-pos dest)]
     (if (> tack-a-dist tack-b-dist)
       tack-b
-      tack-a)))
+      tack-a))  )
+
+(def tack-outlook 500)
+(defn lifted-tack [boat]
+  "determines which tack will get us closer to the mark
+
+   it does this by extrapolating how far from the mark you would be if
+   you stayed on each tack for 10 * the boat movement figure, maybe it
+   would be better to just compare the mark angle to the pointing
+   angle???
+
+   I'm worried that this function could end up oscilating very quickly
+   so that the boat tacks back and forth without putting much time in
+   on any one tack
+
+   I think I could make it better by taking into account the current
+   position, and how long we expect it to take to tack over to the
+   other position
+
+   then it becomes a comparison not of which tack will get us closer
+   to the mark, but which course of actions in t+ x will get us closer
+   to the mark
+
+"
+  (let [pos     ((boat :turtle) :position)
+        dest    (boat :destination)
+        dir     ((boat :turtle) :direction)
+        tack-a  (-c (-c 180 wind-direction) pointing-angle)
+        tack-b  (+c (-c 180 wind-direction) pointing-angle)
+        tack-a-turn (clojure.contrib.math/abs (angle-diff  dir tack-a))
+        tack-b-turn (clojure.contrib.math/abs (angle-diff  dir tack-b))
+        closer-tack (if (< tack-a-turn tack-b-turn)
+                       tack-a tack-b)
+        mark-distance (point-distance pos dest)
+        tack-outlook  (+ mark-distance 20)
+        tack-a-pos (move-point-dir
+                    pos tack-a
+                    (* (- tack-outlook tack-a-turn) boat-movement))
+        tack-b-pos (move-point-dir
+                    pos tack-b
+                    (* (- tack-outlook tack-b-turn) boat-movement))
+
+        tack-a-dist (point-distance tack-a-pos dest)
+        tack-b-dist (point-distance tack-b-pos dest)
+        tack-dist-diff  (clojure.contrib.math/abs (- tack-a-dist tack-b-dist))]
+    (println "tack-a-turn tack-a-dist" tack-a-turn tack-a-dist)
+    (println "tack-b-turn tack-b-dist tack-dist-diff"
+             tack-b-turn tack-b-dist tack-dist-diff)
+
+    (if (> 5 (clojure.contrib.math/abs (- tack-a-dist tack-b-dist)))
+      (do
+        (println " chosing closer-tack" closer-tack)
+        closer-tack)
+      (do
+        (println "tack-a-dist tack-b-dist" tack-a-dist tack-b-dist)
+        (if (<= tack-a-dist tack-b-dist)
+          tack-b
+          tack-a)))))
 
 (deftest test-lifted-tack
   (is (= 45
@@ -174,7 +231,7 @@
   )
 
 (defn pcomment [comments]
-  ;;(println comments)
+(println comments)
   
   )
 
@@ -189,7 +246,7 @@
         (if (can-point mark-bearing)
           (do 
             (pcomment "if we can go straight to the mark we have it easy")
-            (if (= dir mark-bearing)
+            (if (> 3 (clojure.contrib.math/abs (angle-diff dir mark-bearing)))
               (do
                 (pcomment "if we are pointing at the mark, go towards it!")
                 (b-forward boat boat-movement))
@@ -206,5 +263,7 @@
                   (b-forward boat boat-movement))
                 (do
                   (pcomment "otherwise, let's start turning towards the mark")
-                  (b-clockwise boat (updated-heading dir lifted-heading)))))))))))
+                  (b-clockwise boat (updated-heading dir lifted-heading))))))))
+      boat
+      )))
 
