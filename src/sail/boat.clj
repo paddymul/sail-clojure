@@ -76,7 +76,7 @@
    :turtle (anti-clockwise (boat :turtle) delta-angle)))
   
 (def destination-resolution 5)
-(def boat-movement 1)
+(def boat-movement 10)
 (def boat-rotation 1)
 
 (comment

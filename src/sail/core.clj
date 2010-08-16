@@ -24,6 +24,7 @@
 (def marks [(make-mark 300  100)  (make-mark 100  300)  (make-mark 400  300)])  
 
 (defn draw-marks []
+  (stroke-weight 9)  ;; sets the turtle size
   (doseq [a-mark marks]
     (stroke-float 90 90 0)
     (draw-turtle a-mark)))
@@ -44,11 +45,11 @@
   (draw-marks)
   
   (stroke-float 90)  ;; sets the turtle color
-  (stroke-weight 9)  ;; sets the turtle size
+  (stroke-weight 20)  ;; sets the turtle size
   (forward! turtle-b 20)
-  (draw-turtle turtle-b)
-  (reset! boat-a (boat-turn ~boat-a))
-  (draw-turtle (@boat-a :turtle))
+  ;;(draw-turtle turtle-b)
+  (reset! boat-a (boat-turn @boat-a))
+  (draw-point ((@boat-a :turtle) :position))
   ;;(when (> (frame-count) 100)
   ;;(/ 1 0))
 
