@@ -1,13 +1,19 @@
  (ns sail.core
   (:use
    ;;[rosado.processing]
-   [logo.macrology]
-   [logo.turtle]
+   [sail.boat.course :only [three-leg-course]]
+   [logo.macrology :only [rerun-defapplet]]
+   [logo.turtle :only [draw-turtle forward! ]]
+   [logo.draw   :only [draw-point]]
    [logo.turtle-prim :only [mk-turtle]]
-   [logo.draw]
-   [logo.core]
-   [logo.math]
-   [sail.boat :only [update-boat mk-boat]]
+   [logo.core   :only [setup]]
+;;   [logo.turtle]
+;;
+
+;;   [logo.core]
+;;   [logo.math]
+   [sail.boat.boat-core :only [update-boat]]
+   [sail.boat.nodeps    :only [mk-boat]]
    [rosado.processing :only [background-float point
                              frame-count stroke-weight
                              no-stroke stroke-float
@@ -17,15 +23,10 @@
 
 
 ;; marks
-(defn make-mark [x y]
-  (atom (mk-turtle
-         :position {:x x :y y}
-         :direction 0)))
-(def marks [(make-mark 300  100)  (make-mark 100  300)  (make-mark 400  300)])  
 
-(defn draw-marks []
+(defn draw-marks [course]
   (stroke-weight 9)  ;; sets the turtle size
-  (doseq [a-mark marks]
+  (doseq [a-mark course]
     (stroke-float 90 90 0)
     (draw-turtle a-mark)))
 
@@ -36,7 +37,7 @@
                            :position {:x 50 :y 250}
                            :direction 100
                            )))
-(def boat-a (atom (mk-boat :destination (:position @(nth marks 0))
+(def boat-a (atom (mk-boat :destination (:position @(nth three-leg-course 0))
                            :position {:x 50 :y 850}
                            :direction 100
                            )))
@@ -46,7 +47,7 @@
 (defn sail-draw []
   
   (background-float  90 0 20) ;; redraws the background
-  (draw-marks)
+  (draw-marks three-leg-course)
   
   (stroke-float 90)  ;; sets the turtle color
   (stroke-weight 20)  ;; sets the turtle size
