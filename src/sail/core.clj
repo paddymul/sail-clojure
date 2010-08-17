@@ -5,11 +5,9 @@
                              no-stroke stroke-float
                              smooth
                              ]]
-   [logo.macrology :only [rerun-defapplet]]
-   [logo.turtle :only [draw-turtle forward! ]]
-   [logo.draw   :only [draw-point]]
+   [logo.processing-util :only [setup rerun-defapplet]]
    [logo.turtle-prim :only [mk-turtle]]
-   [logo.core   :only [setup]]
+   [logo.draw   :only [draw-point draw-turtle forward! ]]
    [sail.boat.course :only [three-leg-course]]
    [sail.boat.boat-core :only [update-boat]]
    [sail.boat.nodeps    :only [mk-boat]]
