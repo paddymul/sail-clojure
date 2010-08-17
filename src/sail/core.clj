@@ -1,24 +1,19 @@
  (ns sail.core
   (:use
-   ;;[rosado.processing]
-   [sail.boat.course :only [three-leg-course]]
+   [rosado.processing :only [background-float point
+                             frame-count stroke-weight
+                             no-stroke stroke-float
+                             smooth
+                             ]]
    [logo.macrology :only [rerun-defapplet]]
    [logo.turtle :only [draw-turtle forward! ]]
    [logo.draw   :only [draw-point]]
    [logo.turtle-prim :only [mk-turtle]]
    [logo.core   :only [setup]]
-;;   [logo.turtle]
-;;
-
-;;   [logo.core]
-;;   [logo.math]
+   [sail.boat.course :only [three-leg-course]]
    [sail.boat.boat-core :only [update-boat]]
    [sail.boat.nodeps    :only [mk-boat]]
-   [rosado.processing :only [background-float point
-                             frame-count stroke-weight
-                             no-stroke stroke-float
-                             smooth
-                             ]]))
+))
 
 
 
