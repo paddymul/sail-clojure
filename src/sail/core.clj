@@ -12,19 +12,19 @@
   )
 
 
-(comment
-(def boat-a (atom (mk-boat :destination (:position @(nth sail.course.core/three-leg-course 0))
-                           :position {:x 50 :y 850}
-                           :direction 100
-                           )))
-)
+
 (def boat-a (atom
              (mk-managed-boat :destination
                               (:position
-                               @(nth sail.course.core/three-leg-course 0))
+                               (nth sail.course.core/three-leg-course 0))
                            :position {:x 50 :y 850}
-                           :direction 100
+                           :direction 45
                            )))
+
+(reset! boat-a (let [b @boat-a
+                     notes (:notes b)]
+                 (assoc b :notes 
+                        (assoc notes :marks three-leg-course))))
 
 (defn sail-draw []
   

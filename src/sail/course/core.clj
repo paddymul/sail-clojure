@@ -4,9 +4,9 @@
    ))
 
 (defn make-mark [x y]
-  (atom (mk-turtle
+  (mk-turtle
          :position {:x x :y y}
-         :direction 0)))
+         :direction 0))
 (def three-leg-course
      [(make-mark 300  100)  (make-mark 100  300)  (make-mark 400  300)])  
 (comment

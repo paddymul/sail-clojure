@@ -50,7 +50,7 @@
   (assert-cannot-sail  180 40))
 
 
-(def boat-movement 5)
+(def boat-movement 10)
 (def boat-rotation 1)
 
 (defn boat-physics [boat rudder-angle]

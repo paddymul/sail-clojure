@@ -110,52 +110,79 @@
     (is (= 315
            (lifted-tack boat notes)))))
 
+(defn make-good-velocity [boat notes]
+  "this function's name is a play on velocity-made-good "
+  (let [pos     ((boat :turtle) :position)
+        dest    (notes :destination)
+        dir     ((boat :turtle) :direction)]
+    
+    (let [mark-bearing (logot/bearing pos dest)]
+      (if (can-point mark-bearing)
+        (do 
+          (pcomment "if we can go straight to the mark we have it easy")
+          (if (> 3 (clojure.contrib.math/abs (angle-diff dir mark-bearing)))
+            (do
+              (pcomment "if we are pointing at the mark, go towards it!")
+              [0 notes])
+            (do
+              (println "mark-bearing direction"  mark-bearing dir)
+              (pcomment "let's start turning towards the mark")
+              ;; hopefully the signs are correct
+              [(updated-heading dir mark-bearing) notes])))
+        (do
+          (pcomment "aha life is interesting, the mark is upwind of us")
+          (let [lifted-heading (lifted-tack boat notes)]
+            (if (= dir lifted-heading)
+              (do
+                (pcomment "if we are on the lifted-tack now, let's go forward")
+                [0 notes])
+              (do
+                (pcomment "otherwise, let's start turning towards the mark")
+                [(updated-heading dir lifted-heading) notes]
+                ))))))))
+
+(defn turn-into-irons [boat notes]
+  (let [dir     ((boat :turtle) :direction)]
+      (if (= dir (-c 180 wind-direction))
+        [0  notes] ;; if we are pointing at the wind stay there
+        [-1 notes] ;; otherwise turn into the wind, to starboard)
+        )))
+
+(defn update-marks [notes]
+  (println " update marks ")
+  (let [marks      (notes :marks)
+        new-mark   (first marks)
+        new-marks  (rest marks)]
+    (merge notes {:marks new-marks :destination (:position new-mark)})))
+
+(deftest update-marks-test
+
+  (is (= {:destination {:x 30, :y 30}, :marks [{:position {:x 90, :y 90}}]}
+         (update-marks {:marks [{:position {:x 30 :y 30}}
+                                {:position {:x 90 :y 90}}]}))))
+
+
 (defn boat-turn [boat notes]
   (let [pos     ((boat :turtle) :position)
         dest    (notes :destination)
         dir     ((boat :turtle) :direction)]
-
+    (println "boat-turn-variables" pos dest dir notes)
     (if (< destination-resolution
            (point-distance dest pos))
       ;; if we aren't at the mark
-      (let [mark-bearing (logot/bearing pos dest)]
-        (if (can-point mark-bearing)
-          (do 
-            (pcomment "if we can go straight to the mark we have it easy")
-            (if (> 3 (clojure.contrib.math/abs (angle-diff dir mark-bearing)))
-              (do
-                (pcomment "if we are pointing at the mark, go towards it!")
-                [0 notes])
-              (do
-                (println "mark-bearing direction"  mark-bearing dir)
-                (pcomment "let's start turning towards the mark")
-                ;; hopefully the signs are correct
-                [(updated-heading dir mark-bearing) notes])))
-          (do
-            (pcomment "aha life is interesting, the mark is upwind of us")
-            (let [lifted-heading (lifted-tack boat notes)]
-              (if (= dir lifted-heading)
-                (do
-                  (pcomment "if we are on the lifted-tack now, let's go forward")
-                  [0 notes])
-                (do
-                  (pcomment "otherwise, let's start turning towards the mark")
-                  [(updated-heading dir lifted-heading) notes]
-
-                  ))))))
+      (make-good-velocity boat notes)
       ;; we are at the mark
-      ;; for now I will just point the boat at the wind
-      ;;
-      (if (= dir (-c 180 wind-direction))
-        [0  notes] ;; if we are pointing at the wind stay there
-        [-1 notes] ;; otherwise turn into the wind, to starboard)
-        ))))
+      ;;for now we will pretend that reaching the
+      ;; mark will take a whole turn, i'm lazy
+      [0 (update-marks notes)])))
+
+
 (deftest test-boat-turn
   (let [mb (mk-managed-boat :destination {:x 100 :y 100}
                             :position {:x 50 :y 50})
         boat (:boat mb)
         notes (:notes mb)]
-  (is (= [1 notes] (boat-turn boat notes)))))
+    (is (= [1 notes] (boat-turn boat notes)))))
 
 
 
