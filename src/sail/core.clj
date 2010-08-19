@@ -1,15 +1,27 @@
- (ns sail.core
+(ns sail.core
   (:use
-   [rosado.processing :only [frame-count]]
+   [clojure.contrib.trace]
+   [rosado.processing    :only [frame-count]]
    [logo.processing-util :only [setup rerun-defapplet]]
-   [sail.boat.course :only [three-leg-course draw-course]]
-   [sail.boat.boat-core :only [update-boat]]
-   [sail.boat.draw :only [draw-boat]]
-   [sail.boat.nodeps    :only [mk-boat]]
-))
+   [sail.course.core     :only [three-leg-course]]
+   [sail.course.draw     :only [draw-course]]
+   [sail.boat.boat-core  :only [update-managed-boat]]
+   [sail.boat.draw       :only [draw-boat]]
+   [sail.boat.nodeps     :only [mk-managed-boat]])
+  ;;  (:require [sail.course.core])
+  )
 
 
-(def boat-a (atom (mk-boat :destination (:position @(nth three-leg-course 0))
+(comment
+(def boat-a (atom (mk-boat :destination (:position @(nth sail.course.core/three-leg-course 0))
+                           :position {:x 50 :y 850}
+                           :direction 100
+                           )))
+)
+(def boat-a (atom
+             (mk-managed-boat :destination
+                              (:position
+                               @(nth sail.course.core/three-leg-course 0))
                            :position {:x 50 :y 850}
                            :direction 100
                            )))
@@ -18,8 +30,8 @@
   
 
   (draw-course three-leg-course)
-  (reset! boat-a (update-boat @boat-a))
-  (draw-boat @boat-a)
+  (reset! boat-a (update-managed-boat @boat-a))
+  (draw-boat (:boat @boat-a))
   (when (> (frame-count) 1000)
     (/ 1 0)))
 

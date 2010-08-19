@@ -7,50 +7,64 @@
    [clojure.contrib.def :only [defnk]]
    ))
 
-(defstruct boat :destination :turtle)
+(defstruct boat :speed :turtle)
 
-(defnk mk-boat [:destination {:x 50 :y 0}
+(defnk mk-boat [:speed 0
                 :position {:x 75 :y 100}
                 :direction 0]
   (struct boat
-          destination
+          speed
           (mk-turtle :position position :direction direction)))
 
+(defstruct managed-boat :boat :notes)
 
+(defnk mk-managed-boat
+  [:destination {:x 50 :y 0}
+   :position {:x 75 :y 100}
+   :direction 0]
+  (struct managed-boat 
+          (mk-boat :position position :direction direction)
+           {:destination destination}))
+
+(deftest managed-boat-test
+
+  (is (=
+       {:boat
+        {:speed 0,
+         :turtle
+         {:position {:x 75, :y 100},
+          :direction 0}},
+        :notes
+        {:destination {:x 50, :y 0}}}
+
+       (mk-managed-boat)))
+
+  (is (=
+       {:boat
+        {:speed 0,
+         :turtle
+         {:position {:x 75, :y 100},
+          :direction 0}},
+        :notes
+        {:destination {:x 500, :y 0}}
+        }
+
+       (mk-managed-boat :destination {:x 500, :y 0} )))
+
+
+  )
 
 (defn b-forward [boat distance]
-  (let [n-turtle (forward (boat :turtle) distance)
-        position (:position n-turtle)
-        direction (:direction n-turtle)
-        n-boat     (mk-boat
-                    :destination (boat :destination)
-                    :position (:position n-turtle)
-                    :direction (:direction n-turtle))
-        ]
-    n-boat))
+  (assoc boat :turtle
+         (forward (boat :turtle) distance)))
 
 (defn b-clockwise [boat delta-angle]
-  (let [n-turtle (clockwise (boat :turtle) delta-angle)
-        position (:position n-turtle)
-        direction (:direction n-turtle)
-        n-boat     (mk-boat
-                    :destination (boat :destination)
-                    :position (:position n-turtle)
-                    :direction (:direction n-turtle))
-        ]
-    n-boat))
+  (assoc boat :turtle
+         (clockwise (boat :turtle) delta-angle)))
 
 
 (defn b-anti-clockwise [boat delta-angle]
-  (let [n-turtle (anti-clockwise (boat :turtle) delta-angle)
-        position (:position n-turtle)
-        direction (:direction n-turtle)
-        n-boat     (mk-boat
-                    :destination (boat :destination)
-                    :position (:position n-turtle)
-                    :direction (:direction n-turtle))
-        ]
-    n-boat))
+  (assoc boat :turtle (anti-clockwise (boat :turtle) delta-angle)))
 
 
 (deftest b-tests
@@ -63,7 +77,7 @@
             10))))))
 
 (defn pcomment [& comments]
-  ;;(apply println comments)
+  (apply println comments)
   )
 
 (comment

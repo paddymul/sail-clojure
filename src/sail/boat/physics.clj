@@ -1,12 +1,16 @@
 (ns sail.boat.physics
   (:use
+   [clojure.contrib.trace]
    [clojure.test :only [is deftest]]
-   [sail.boat.nodeps :only
-    [mk-boat pcomment b-forward b-clockwise b-anti-clockwise]]
    [clojure.contrib.math :only [abs]]
+   [clojure.contrib.def :only [defnk ]]
+   
    [logo.math :only [angle-diff -c +c]]
    [logo.turtle-prim :only
     [mk-turtle move-point-dir]] 
+   
+   [sail.boat.nodeps :only
+    [mk-boat pcomment b-forward b-clockwise b-anti-clockwise]]
    )
   
   (:require
@@ -45,7 +49,7 @@
   (assert-cannot-sail  180 320)
   (assert-cannot-sail  180 40))
 
-(def destination-resolution 5)
+
 (def boat-movement 5)
 (def boat-rotation 1)
 
@@ -77,3 +81,44 @@
             (- 0 boat-rotation))]
       (pcomment "turn-amount" turn-amount)
       (b-clockwise boat turn-amount))))
+
+(defn tactics-estimator-internal  [boat termination-predicate iteration-count ]
+  (let [[rudder-angle should-terminate ]
+        (apply termination-predicate [boat iteration-count])
+        boat2 (boat-physics boat rudder-angle)]
+
+    (if should-terminate
+      boat
+      (recur boat2 termination-predicate (+ iteration-count 1)))))
+
+(defnk tactics-estimator [boat termination-predicate :iteration-count 0]
+  (comment
+    hopefully with tactics estimator I can build a cute little dsl
+    that looks somehting like this
+    ((tack-port) 50 )  meaning go on a port tack and then 50 steps afterwards
+    the great thing about this is, I can use this to estimate other boats progress too
+    this will be helpfull with search based approaches to the problem
+
+    I am enjoying the constraints of functional programing here
+
+    maybe for right now this is a bit advanced something like tactics
+    estimator should be built before I have a more advanced physics
+    model in place
+
+    right now physics are so dirt simple that I can model them quickly
+    inside of lifted-tack that won't always be the case
+
+    )
+  (tactics-estimator-internal boat termination-predicate iteration-count)
+  )
+
+(deftest estimator-test
+
+   (tactics-estimator (mk-boat) (fn [boat itercount] [0 (> 3 itercount)]))
+ (tactics-estimator (mk-boat :direction 50) (fn [boat itercount]
+                                  (println boat)
+                                  [0 (< 3 itercount)]))
+  )
+;;(trace (tactics-estimator (mk-boat) (fn [boat itercount] [0 (> 3 itercount)])))
+
+;;  (trace)

@@ -1,15 +1,15 @@
 (ns sail.boat.tactics
   (:use
    [clojure.test :only [is deftest]]
-   [sail.boat.nodeps :only
-    [mk-boat pcomment b-forward b-clockwise b-anti-clockwise]]
-   [sail.boat.physics :only
-    [boat-rotation wind-direction boat-movement pointing-angle can-point]]
-
    [clojure.contrib.math :only [abs]]
    [logo.math :only [angle-diff -c +c point-distance]]
    [logo.turtle-prim :only
-    [mk-turtle move-point-dir]] 
+    [ move-point-dir]] 
+   [sail.boat.nodeps :only
+    [mk-managed-boat pcomment b-forward b-clockwise b-anti-clockwise]]
+   [sail.boat.physics :only
+    [boat-rotation wind-direction boat-movement pointing-angle can-point]]
+
    )
   
   (:require
@@ -19,41 +19,6 @@
 
    ))
 (def destination-resolution 5)
-(comment
-  " We will know that we have rounded a mark when the bearing from the
-  boat to the mark is 180 from the bearing from that mark to the
-  previous mark
-
-  Look at the following image.  M2 is the mark we care about M1 is the
-  previous mark.  B is the boat.  B has now cleared the mark.  I'm not
-  sure how to handle cases where B crosses 180 without touching it.
-
-  
-
-
-            B
-             \\
-               M2
-
-
-       M3              M1
-
-      Thinking about this problem prompted thought about defining a
-      360 penalty.  the tracking for the 360 penalty must occur
-      without rounding any marks
-
-"
-
-  )
-
-(comment
-  (symbol-macro
-   boat-destructure
-   "consider a series of  symbol-macros that takes the place of"
-   (let [
-         pos     ((boat :turtle) :position)
-         dest    (boat :destination)
-         dir     ((boat :turtle) :direction)])))
 
 (defn updated-heading [current-heading mark-bearing]
   "returns the angle that should be turned to point at mark "
@@ -62,6 +27,7 @@
       (- 0 boat-rotation)
       boat-rotation)))
 
+
 (deftest test-updated-heading
   (is (= 1
          (updated-heading  315 45))))
@@ -69,7 +35,7 @@
 
 (def tack-outlook 500)
 
-(defn lifted-tack [boat]
+(defn lifted-tack [boat notes]
   "determines which tack will get us closer to the mark
 
    it does this by extrapolating how far from the mark you would be if
@@ -91,7 +57,7 @@
 
 "
   (let [pos     ((boat :turtle) :position)
-        dest    (boat :destination)
+        dest    (notes :destination)
         dir     ((boat :turtle) :direction)
         tack-a  (-c (-c 180 wind-direction) pointing-angle)
         tack-b  (+c (-c 180 wind-direction) pointing-angle)
@@ -128,22 +94,27 @@
           tack-a
           tack-b)))))
 
+
 (deftest test-lifted-tack
-  (is (= 45
-         (lifted-tack
-          (mk-boat :destination {:x 100 :y 100}
-                   :position {:x 50 :y 50}))))
-  (is (= 315
-         (lifted-tack
-          (mk-boat :destination {:x 100 :y 100}
-                   :position {:x 150 :y 50}))))
-  )
+  (let [mb (mk-managed-boat :destination {:x 100 :y 100}
+                            :position {:x 150 :y 50})
+        boat (:boat mb)
+        notes (:notes mb)]
+    (is (= 45
+           (lifted-tack boat notes))))
+  (let [mb (mk-managed-boat :destination {:x 100 :y 100}
+                            :position {:x 50 :y 50})
+        boat (:boat mb)
+        notes (:notes mb)]
 
+    (is (= 315
+           (lifted-tack boat notes)))))
 
-(defn boat-turn [boat]
+(defn boat-turn [boat notes]
   (let [pos     ((boat :turtle) :position)
-        dest    (boat :destination)
+        dest    (notes :destination)
         dir     ((boat :turtle) :direction)]
+
     (if (< destination-resolution
            (point-distance dest pos))
       ;; if we aren't at the mark
@@ -154,28 +125,43 @@
             (if (> 3 (clojure.contrib.math/abs (angle-diff dir mark-bearing)))
               (do
                 (pcomment "if we are pointing at the mark, go towards it!")
-                0)
+                [0 notes])
               (do
                 (println "mark-bearing direction"  mark-bearing dir)
                 (pcomment "let's start turning towards the mark")
                 ;; hopefully the signs are correct
-                (updated-heading dir mark-bearing))))
+                [(updated-heading dir mark-bearing) notes])))
           (do
             (pcomment "aha life is interesting, the mark is upwind of us")
-            (let [lifted-heading (lifted-tack boat)]
+            (let [lifted-heading (lifted-tack boat notes)]
               (if (= dir lifted-heading)
                 (do
                   (pcomment "if we are on the lifted-tack now, let's go forward")
-                  0)
+                  [0 notes])
                 (do
                   (pcomment "otherwise, let's start turning towards the mark")
-                  (updated-heading dir lifted-heading)))))))
+                  [(updated-heading dir lifted-heading) notes]
+
+                  ))))))
       ;; we are at the mark
       ;; for now I will just point the boat at the wind
       ;;
       (if (= dir (-c 180 wind-direction))
-        0 ;; if we are pointing at the wind stay there
-        -1 ;; otherwise turn into the wind, to starboard)
+        [0  notes] ;; if we are pointing at the wind stay there
+        [-1 notes] ;; otherwise turn into the wind, to starboard)
         ))))
+(deftest test-boat-turn
+  (let [mb (mk-managed-boat :destination {:x 100 :y 100}
+                            :position {:x 50 :y 50})
+        boat (:boat mb)
+        notes (:notes mb)]
+  (is (= [1 notes] (boat-turn boat notes)))))
 
 
+
+
+(comment
+  I think I should make some optimize functions, these will be useful with tactics estimator
+  
+
+  )
