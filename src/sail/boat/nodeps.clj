@@ -7,30 +7,76 @@
    [clojure.contrib.def :only [defnk]]
    ))
 
-(defstruct boat :speed :turtle)
+(defstruct boat
+  :speed
+  :rotation  
+  :minimum-speed  
+
+  :maximum-possible-speed
+  :pointing-angle
+  :turtle )
 
 (defnk mk-boat [:speed 0
+                
+                :rotation  1
+                :minimum-speed  0.1
+                :maximum-possible-speed 1
+                :pointing-angle 45
                 :position {:x 75 :y 100}
                 :direction 0]
   (struct boat
           speed
+          ;; the folowing 4 parameters will be fixed for the life of the boat
+          ;;to make life easier, we let the boat move a little while in irons
+          rotation
+          minimum-speed  
+          maximum-possible-speed
+          pointing-angle
           (mk-turtle :position position :direction direction)))
+
+(deftest mk-boat-test
+
+  (is (= {
+          :speed 0
+          :rotation  1
+          :minimum-speed  0.1
+          :maximum-possible-speed 1
+          :pointing-angle 45
+          :turtle (mk-turtle :position {:x 75 :y 100} :direction 0)
+          }
+         (mk-boat))))
 
 (defstruct managed-boat :boat :notes)
 
 (defnk mk-managed-boat
-  [:destination {:x 50 :y 0}
+  [:speed 0
+   :rotation  1
+   :minimum-speed  0.1
+   :maximum-possible-speed 1
+   :pointing-angle 45
+   :destination {:x 50 :y 0}
    :position {:x 75 :y 100}
    :direction 0]
   (struct managed-boat 
-          (mk-boat :position position :direction direction)
-           {:destination destination}))
+          (mk-boat
+           :rotation                    rotation
+           :minimum-speed               minimum-speed
+           :speed                       speed                      
+           :maximum-possible-speed      maximum-possible-speed 
+           :pointing-angle              pointing-angle      
+           :position position :direction direction)
+          {:destination destination}))
+
 
 (deftest managed-boat-test
 
   (is (=
        {:boat
         {:speed 0,
+         :rotation  1
+         :minimum-speed  0.1
+         :maximum-possible-speed 1
+         :pointing-angle 45
          :turtle
          {:position {:x 75, :y 100},
           :direction 0}},
@@ -41,7 +87,11 @@
 
   (is (=
        {:boat
-        {:speed 0,
+        {:speed 0
+         :rotation  1
+         :minimum-speed  0.1
+         :maximum-possible-speed 1
+         :pointing-angle 45
          :turtle
          {:position {:x 75, :y 100},
           :direction 0}},
@@ -66,7 +116,7 @@
 (defn b-anti-clockwise [boat delta-angle]
   (assoc boat :turtle (anti-clockwise (boat :turtle) delta-angle)))
 
-
+(comment
 (deftest b-tests
   (is (= {:x 110 :y 100}
          (:position
@@ -75,7 +125,7 @@
             (mk-boat :direction 90
                      :position  {:x 100 :y 100})
             10))))))
-
+)
 (defn pcomment [& comments]
   (apply println comments)
   )

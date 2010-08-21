@@ -15,12 +15,15 @@
 (defn update-managed-boat [managed-boat]
   (let [orig-boat  (:boat managed-boat)
         orig-notes (:notes managed-boat)
-        boat-pair (boat-turn orig-boat  (:notes managed-boat))
+        sailing-environment {}
+        boat-pair
+        (boat-turn orig-boat sailing-environment  (:notes managed-boat))
         rudder-angle (first boat-pair)
         up-notes   (first (rest boat-pair))]
     (println orig-boat rudder-angle)
-    (merge managed-boat {:boat (boat-physics orig-boat rudder-angle)
-                         :notes up-notes})))
+    (merge managed-boat
+           {:boat (boat-physics orig-boat sailing-environment rudder-angle)
+            :notes up-notes})))
 
 
 

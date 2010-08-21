@@ -52,12 +52,9 @@
 
 (def boat-movement 10)
 (def boat-rotation 1)
-
-(defn boat-physics [boat rudder-angle]
-  ;; a rudder angle of less than 0 means that the trailing edge of
-  ;; the rudder is pointing to starboard, this will make the boat
-  ;; turn to starboard
-  ;;
+(comment
+  "non-sailor explanation"
+    ;;
   ;;  for non-sailors, when looking towards the bow (front) of the
   ;;  boat starboard is on your right, port is on your left
   ;;
@@ -72,9 +69,14 @@
   ;;       =====
   ;;         \
   ;;    
+)
+(defn boat-physics [boat sailing-environment rudder-angle]
+  ;; a rudder angle of less than 0 means that the trailing edge of
+  ;; the rudder is pointing to starboard, this will make the boat
+  ;; turn to starboard
   (if (= rudder-angle 0)
     ;; aha this is wrong, I need a test to make sure we are not in irons
-    (b-forward boat boat-movement)
+    (b-forward boat (boat :maximum-possible-speed))
     (let [turn-amount
           (if (< 0 rudder-angle)
             boat-rotation
@@ -82,16 +84,28 @@
       (pcomment "turn-amount" turn-amount)
       (b-clockwise boat turn-amount))))
 
-(defn tactics-estimator-internal  [boat termination-predicate iteration-count ]
+(deftest boat-physics-test
+  (is (= (boat-physics
+          (mk-boat :direction 180 :position {:x 100 :y 100}
+                   :pointing-angle 45
+                   :speed 1)
+          {:wind-angle 180}
+          0)
+         (mk-boat :direction 180 :position {:x 100 :y 101}
+                  :pointing-angle 45
+                  :speed 1))))
+         
+          
+(defn tactics-estimator-internal  [boat sailing-environment termination-predicate iteration-count ]
   (let [[rudder-angle should-terminate ]
         (apply termination-predicate [boat iteration-count])
-        boat2 (boat-physics boat rudder-angle)]
+        boat2 (boat-physics boat sailing-environment rudder-angle)]
 
     (if should-terminate
       boat
-      (recur boat2 termination-predicate (+ iteration-count 1)))))
+      (recur boat2 sailing-environment termination-predicate (+ iteration-count 1)))))
 
-(defnk tactics-estimator [boat termination-predicate :iteration-count 0]
+(defnk tactics-estimator [boat sailing-environment termination-predicate :iteration-count 0]
   (comment
     hopefully with tactics estimator I can build a cute little dsl
     that looks somehting like this
@@ -109,13 +123,13 @@
     inside of lifted-tack that won't always be the case
 
     )
-  (tactics-estimator-internal boat termination-predicate iteration-count)
+  (tactics-estimator-internal boat {} termination-predicate iteration-count)
   )
 
 (deftest estimator-test
 
-   (tactics-estimator (mk-boat) (fn [boat itercount] [0 (> 3 itercount)]))
- (tactics-estimator (mk-boat :direction 50) (fn [boat itercount]
+  (tactics-estimator (mk-boat) {} (fn [boat itercount] [0 (> 3 itercount)]))
+  (tactics-estimator (mk-boat :direction 50) {} (fn [boat itercount]
                                   (println boat)
                                   [0 (< 3 itercount)]))
   )

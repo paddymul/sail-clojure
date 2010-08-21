@@ -110,7 +110,7 @@
     (is (= 315
            (lifted-tack boat notes)))))
 
-(defn make-good-velocity [boat notes]
+(defn make-good-velocity [boat sailing-environment notes]
   "this function's name is a play on velocity-made-good "
   (let [pos     ((boat :turtle) :position)
         dest    (notes :destination)
@@ -162,7 +162,7 @@
                                 {:position {:x 90 :y 90}}]}))))
 
 
-(defn boat-turn [boat notes]
+(defn boat-turn [boat sailing-environment notes]
   (let [pos     ((boat :turtle) :position)
         dest    (notes :destination)
         dir     ((boat :turtle) :direction)]
@@ -170,7 +170,7 @@
     (if (< destination-resolution
            (point-distance dest pos))
       ;; if we aren't at the mark
-      (make-good-velocity boat notes)
+      (make-good-velocity  boat sailing-environment notes)
       ;; we are at the mark
       ;;for now we will pretend that reaching the
       ;; mark will take a whole turn, i'm lazy
@@ -182,7 +182,7 @@
                             :position {:x 50 :y 50})
         boat (:boat mb)
         notes (:notes mb)]
-    (is (= [1 notes] (boat-turn boat notes)))))
+    (is (= [1 notes] (boat-turn boat {}  notes)))))
 
 
 
