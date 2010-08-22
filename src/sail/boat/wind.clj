@@ -55,4 +55,4 @@
                    (:wind-direction sailing-environment)))
 
 (defn boat-on-starboard-heading [boat sailing-environment]
-  (not (boat-on-starboard-heading boat sailing-environment)))
+  (not (boat-on-port-heading boat sailing-environment)))
