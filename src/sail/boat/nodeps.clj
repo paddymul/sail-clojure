@@ -57,7 +57,8 @@
 (defstruct managed-boat :boat :notes)
 
 (defnk mk-managed-boat
-  [:speed 0
+  [:boat false
+   :speed 0
    :rudder-angle 0
    :rotation  1
    :minimum-speed  0.1
@@ -66,6 +67,10 @@
    :destination {:x 50 :y 0}
    :position {:x 75 :y 100}
    :direction 0]
+  (if boat
+    (struct managed-boat
+            boat
+            {:destination destination})
   (struct managed-boat 
           (mk-boat
            :rudder-angle                 rudder-angle 
@@ -75,7 +80,7 @@
            :maximum-possible-speed       maximum-possible-speed 
            :pointing-angle               pointing-angle      
            :position position :direction direction)
-          {:destination destination}))
+          {:destination destination})))
 
 
 (deftest managed-boat-test
