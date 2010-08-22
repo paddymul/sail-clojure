@@ -82,6 +82,16 @@
                   :direction 180 :position {:x 100 :y 100}
                   :pointing-angle 45
                   :speed 1)))
+  (is (= (boat-physics
+          (mk-boat :rudder-angle 1
+                   :direction 180 :position {:x 100 :y 100}
+                   :pointing-angle 45
+                   :speed 1)
+          {:wind-direction 0})
+         (mk-boat :rudder-angle 1
+                  :direction 181 :position {:x 100 :y 100}
+                  :pointing-angle 45
+                  :speed 1)))
 
   )
          
