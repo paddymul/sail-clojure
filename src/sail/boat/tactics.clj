@@ -163,9 +163,9 @@
 
 
 (defn boat-turn [boat sailing-environment notes]
-  (let [pos     ((boat :turtle) :position)
+  (let [pos     (boat  :position)
         dest    (notes :destination)
-        dir     ((boat :turtle) :direction)]
+        dir     (boat :direction)]
     (println "boat-turn-variables" pos dest dir notes)
     (if (< destination-resolution
            (point-distance dest pos))
