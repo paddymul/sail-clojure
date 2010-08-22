@@ -41,8 +41,18 @@
 (defn on-starboard-heading [dir wind-direction]
   (not (on-port-heading dir wind-direction)))
 
+
+
+
 (deftest on-starboard-heading-test
   (is (= true  (on-starboard-heading 359 180)))
   (is (= false (on-starboard-heading 1 180)))
 
   )
+
+(defn boat-on-port-heading [boat sailing-environment]
+  (on-port-heading (:direction boat)
+                   (:wind-direction sailing-environment)))
+
+(defn boat-on-starboard-heading [boat sailing-environment]
+  (not (boat-on-starboard-heading boat sailing-environment)))
