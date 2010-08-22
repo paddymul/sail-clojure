@@ -19,7 +19,7 @@
    [clojure.contrib.math :as cmath]
    [logo.math :as lmath]
    [logo.turtle-prim :as logot]
-
+   [sail.boat.nodeps :as nodeps]
    ))
 
 
@@ -49,6 +49,7 @@
   (let [rudder-angle (:rudder-angle boat)
         boat-rotation (:rotation boat)
         ]
+  (println boat)
   (if (= rudder-angle 0)
     (if (can-sail boat sailing-environment)
       (b-forward boat (boat :maximum-possible-speed))
@@ -98,5 +99,15 @@
           
 
 
-
-
+(deftest physics-update-managed-boat-test
+  (is (= (nodeps/mk-managed-boat)
+         (nodeps/update-managed-boat
+          (nodeps/mk-managed-boat)
+          {:wind-direction 180}
+          boat-physics (fn [boat sailing-environment notes]
+                                 [0 notes]))))
+  (is (= (nodeps/mk-managed-boat :rudder-angle 1 :direction 1)
+         (nodeps/update-managed-boat
+          (nodeps/mk-managed-boat)
+          {:wind-direction 180}
+          boat-physics (fn [boat sailing-environment notes] [1 notes])))))

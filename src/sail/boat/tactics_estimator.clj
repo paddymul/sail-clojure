@@ -79,18 +79,5 @@
                   managed-boat sailing-environment
                   physics/boat-physics boat-thinking-fn)
 )
-
-(deftest tactics-estimator-test
-  (is (= (nodeps/mk-managed-boat)
-         (nodeps/update-managed-boat
-          (nodeps/mk-managed-boat)
-          {:wind-direction 180}
-          physics/boat-physics (fn [boat sailing-environment notes]
-                                 [0 notes]))))
-  (is (= (nodeps/mk-managed-boat :rudder-angle 1 :direction 1)
-         (nodeps/update-managed-boat
-          (nodeps/mk-managed-boat)
-          {:wind-direction 180}
-          physics/boat-physics (fn [boat sailing-environment notes]
                                          [1 notes])))))
 ;;                                         tack-port)
