@@ -81,7 +81,7 @@
   ;; turn to starboard
   (let [rudder-angle (:rudder-angle boat)]
   (if (= rudder-angle 0)
-    (if (can-point (:direction (:turtle boat))
+    (if (can-point (:direction boat)
                    (:wind-direction sailing-environment)
                    (:pointing-angle boat)
                    )
