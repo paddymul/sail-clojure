@@ -75,12 +75,12 @@
   ;;         \
   ;;    
 )
-(defn boat-physics [boat sailing-environment rudder-angle]
+(defn boat-physics [boat sailing-environment]
   ;; a rudder angle of less than 0 means that the trailing edge of
   ;; the rudder is pointing to starboard, this will make the boat
   ;; turn to starboard
+  (let [rudder-angle (:rudder-angle boat)]
   (if (= rudder-angle 0)
-    ;; aha this is wrong, I need a test to make sure we are not in irons
     (if (can-point (:direction (:turtle boat))
                    (:wind-direction sailing-environment)
                    (:pointing-angle boat)
@@ -92,32 +92,38 @@
             boat-rotation
             (- 0 boat-rotation))]
       (pcomment "turn-amount" turn-amount)
-      (b-clockwise boat turn-amount))))
+      (b-clockwise boat turn-amount)))))
 
 (deftest boat-physics-test
   (is (= (boat-physics
-          (mk-boat :direction 180 :position {:x 100 :y 100}
+          (mk-boat :rudder-angle 0
+                   :direction 180 :position {:x 100 :y 100}
                    :pointing-angle 45
                    :speed 1)
-          {:wind-direction 180}
-          0)
-         (mk-boat :direction 180 :position {:x 100 :y 101}
+          {:wind-direction 180})
+         (mk-boat :rudder-angle 0
+                  :direction 180 :position {:x 100 :y 101}
                   :pointing-angle 45
                   :speed 1)))
 
   (is (= (boat-physics
-          (mk-boat :direction 180 :position {:x 100 :y 100}
+          (mk-boat :rudder-angle 0
+                   :direction 180 :position {:x 100 :y 100}
                    :pointing-angle 45
                    :speed 1)
-          {:wind-direction 0}
-          0)
-         (mk-boat :direction 180 :position {:x 100 :y 100}
+          {:wind-direction 0})
+         (mk-boat :rudder-angle 0
+                  :direction 180 :position {:x 100 :y 100}
                   :pointing-angle 45
                   :speed 1)))
 
   )
          
           
+
+
+
+
 (defn tactics-estimator-internal  [boat sailing-environment termination-predicate iteration-count ]
   (let [[rudder-angle should-terminate ]
         (apply termination-predicate [boat iteration-count])
@@ -166,6 +172,3 @@
                        (println boat)
                        [0 (< 3 itercount)]))
   )
-;;(trace (tactics-estimator (mk-boat) (fn [boat itercount] [0 (> 3 itercount)])))
-
-;;  (trace)

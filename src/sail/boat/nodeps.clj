@@ -9,15 +9,19 @@
 
 (defstruct boat
   :speed
+  :rudder-angle 
+  ;; the folowing 4 parameters will be fixed for the life of the boat
+  ;;to make life easier, we let the boat move a little while in irons
+  
   :rotation  
   :minimum-speed  
-
   :maximum-possible-speed
   :pointing-angle
+
   :turtle )
 
 (defnk mk-boat [:speed 0
-                
+                :rudder-angle 0
                 :rotation  1
                 :minimum-speed  0.1
                 :maximum-possible-speed 1
@@ -26,8 +30,7 @@
                 :direction 0]
   (struct boat
           speed
-          ;; the folowing 4 parameters will be fixed for the life of the boat
-          ;;to make life easier, we let the boat move a little while in irons
+          rudder-angle
           rotation
           minimum-speed  
           maximum-possible-speed
@@ -38,6 +41,7 @@
 
   (is (= {
           :speed 0
+          :rudder-angle 0
           :rotation  1
           :minimum-speed  0.1
           :maximum-possible-speed 1
@@ -50,6 +54,7 @@
 
 (defnk mk-managed-boat
   [:speed 0
+   :rudder-angle 0
    :rotation  1
    :minimum-speed  0.1
    :maximum-possible-speed 1
@@ -59,11 +64,12 @@
    :direction 0]
   (struct managed-boat 
           (mk-boat
-           :rotation                    rotation
-           :minimum-speed               minimum-speed
-           :speed                       speed                      
-           :maximum-possible-speed      maximum-possible-speed 
-           :pointing-angle              pointing-angle      
+           :rudder-angle                 rudder-angle 
+           :rotation                     rotation
+           :minimum-speed                minimum-speed
+           :speed                        speed                      
+           :maximum-possible-speed       maximum-possible-speed 
+           :pointing-angle               pointing-angle      
            :position position :direction direction)
           {:destination destination}))
 
@@ -72,7 +78,8 @@
 
   (is (=
        {:boat
-        {:speed 0,
+        {:speed 0
+         :rudder-angle 0
          :rotation  1
          :minimum-speed  0.1
          :maximum-possible-speed 1
@@ -88,6 +95,7 @@
   (is (=
        {:boat
         {:speed 0
+         :rudder-angle 0
          :rotation  1
          :minimum-speed  0.1
          :maximum-possible-speed 1
