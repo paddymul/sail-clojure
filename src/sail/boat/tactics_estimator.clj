@@ -3,105 +3,94 @@
    [clojure.contrib.trace]
    [clojure.test :only [is deftest]]
    [clojure.contrib.def :only [defnk ]]
-   [sail.boat.physics :only [boat-physics]]
-   [sail.boat.nodeps :only [mk-boat]]
+   )
+  (:require
+   [sail.boat.wind :as wind]
+   [sail.boat.physics :as physics]
+   [sail.boat.nodeps :as nodeps]
    ))
 
 
-(defn tactics-estimator-internal  [boat sailing-environment termination-predicate iteration-count ]
-  (let [[rudder-angle should-terminate ]
-        (apply termination-predicate [boat iteration-count])
-        boat2 (boat-physics boat sailing-environment rudder-angle)]
+(comment
+  hopefully with tactics estimator I can build a cute little dsl
+  that looks somehting like this
+  ((tack-port) 50 )  meaning go on a port tack and then 50 steps afterwards
+  the great thing about this is, I can use this to estimate other boats progress too
+  this will be helpfull with search based approaches to the problem
 
+  I am enjoying the constraints of functional programing here
+
+  maybe for right now this is a bit advanced something like tactics
+  estimator should be built before I have a more advanced physics
+  model in place
+
+  right now physics are so dirt simple that I can model them quickly
+  inside of lifted-tack that won't always be the case
+
+  )
+
+
+(defn tactics-estimator [managed-boat sailing-environment
+                         boat-thinking-fn
+                         termination-predicate termination-predicate-notes]
+  (let [new-boat (nodeps/update-managed-boat
+                  managed-boat sailing-environment
+                  physics/boat-physics boat-thinking-fn)
+        [should-terminate new-tp-notes]
+        (termination-predicate new-boat sailing-environment
+                               termination-predicate-notes)]
+    (println "should-terminate new-tp-notes" should-terminate new-tp-notes)
     (if should-terminate
-      boat
-      (recur boat2 sailing-environment termination-predicate (+ iteration-count 1)))))
+      [new-boat new-tp-notes]
+      (recur
+       new-boat sailing-environment boat-thinking-fn
+       termination-predicate new-tp-notes))))
 
-(defnk tactics-estimator [boat
-                          sailing-environment
-                          termination-predicate
-                          :iteration-count 0]
-  (comment
-    hopefully with tactics estimator I can build a cute little dsl
-    that looks somehting like this
-    ((tack-port) 50 )  meaning go on a port tack and then 50 steps afterwards
-    the great thing about this is, I can use this to estimate other boats progress too
-    this will be helpfull with search based approaches to the problem
 
-    I am enjoying the constraints of functional programing here
 
-    maybe for right now this is a bit advanced something like tactics
-    estimator should be built before I have a more advanced physics
-    model in place
 
-    right now physics are so dirt simple that I can model them quickly
-    inside of lifted-tack that won't always be the case
+(defn tack-port [boat sailing-environment notes]
+  [1 notes])
 
-    )
-  (tactics-estimator-internal
-   boat
-   sailing-environment
-   termination-predicate
-   iteration-count)
-  )
+(defn tack-port-tp [managed-boat sailing-environment tp-notes]
+  (println "managed-boat sailing-environment tp-notes" managed-boat sailing-environment tp-notes)
+  [(or (and
+    (wind/can-sail (:boat managed-boat) sailing-environment)
+    (wind/boat-on-port-heading (:boat managed-boat) sailing-environment))
+    (< 200  (:count tp-notes)))
+    
+   (assoc tp-notes :count (+ 1 (:count tp-notes)))])
 
-(deftest estimator-test
 
-  (tactics-estimator (mk-boat)
-                     {:wind-direction 180}
-                     (fn [boat itercount] [0 (> 3 itercount)]))
-  (tactics-estimator (mk-boat :direction 50)
-                     {:wind-direction 180}
-                     (fn [boat itercount]
-                       (println boat)
-                       [0 (< 3 itercount)]))
-  )
+(comment asdf
+  (is (= {}
+         (nodeps/mk-managed-boat))))
 
-(defn tactics-estimator-internal  [boat sailing-environment termination-predicate iteration-count ]
-  (let [[rudder-angle should-terminate ]
-        (apply termination-predicate [boat iteration-count])
-        boat2 (boat-physics boat sailing-environment rudder-angle)]
+(deftest tactics-estimator-test
 
-    (if should-terminate
-      boat
-      (recur boat2 sailing-environment termination-predicate (+ iteration-count 1)))))
+  (is (= {}
+         (tactics-estimator
+          (nodeps/mk-managed-boat)
+          {:wind-direction 180}
+          tack-port
+          tack-port-tp {:count 0}))))
+(comment
+(nodeps/update-managed-boat
+                  managed-boat sailing-environment
+                  physics/boat-physics boat-thinking-fn)
+)
 
-(defnk tactics-estimator [boat
-                          sailing-environment
-                          termination-predicate
-                          :iteration-count 0]
-  (comment
-    hopefully with tactics estimator I can build a cute little dsl
-    that looks somehting like this
-    ((tack-port) 50 )  meaning go on a port tack and then 50 steps afterwards
-    the great thing about this is, I can use this to estimate other boats progress too
-    this will be helpfull with search based approaches to the problem
-
-    I am enjoying the constraints of functional programing here
-
-    maybe for right now this is a bit advanced something like tactics
-    estimator should be built before I have a more advanced physics
-    model in place
-
-    right now physics are so dirt simple that I can model them quickly
-    inside of lifted-tack that won't always be the case
-
-    )
-  (tactics-estimator-internal
-   boat
-   sailing-environment
-   termination-predicate
-   iteration-count)
-  )
-
-(deftest estimator-test
-
-  (tactics-estimator (mk-boat)
-                     {:wind-direction 180}
-                     (fn [boat itercount] [0 (> 3 itercount)]))
-  (tactics-estimator (mk-boat :direction 50)
-                     {:wind-direction 180}
-                     (fn [boat itercount]
-                       (println boat)
-                       [0 (< 3 itercount)]))
-  )
+(deftest tactics-estimator-test
+  (is (= (nodeps/mk-managed-boat)
+         (nodeps/update-managed-boat
+          (nodeps/mk-managed-boat)
+          {:wind-direction 180}
+          physics/boat-physics (fn [boat sailing-environment notes]
+                                 [0 notes]))))
+  (is (= (nodeps/mk-managed-boat :rudder-angle 1 :direction 1)
+         (nodeps/update-managed-boat
+          (nodeps/mk-managed-boat)
+          {:wind-direction 180}
+          physics/boat-physics (fn [boat sailing-environment notes]
+                                         [1 notes])))))
+;;                                         tack-port)
