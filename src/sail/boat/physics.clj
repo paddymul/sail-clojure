@@ -20,34 +20,39 @@
 
    ))
 
-(def wind-direction 180)
-;; boat stuff
-(def pointing-angle 45)
 
-(defn can-point [dir]
+;; boat stuff
+
+(defn can-point [dir wind-direction pointing-angle]
   (let [angle-to-wind
         (abs
          (angle-diff dir (-c 180 wind-direction)))]
     (< pointing-angle angle-to-wind)))
 
-(defn can-sail [turtle]
-  (can-point  (:direction turtle)))
+(defn can-sail [turtle sailing-environment pointing-angle]
+  (can-point  (:direction turtle)
+              (:wind-direction sailing-environment)
+              pointing-angle
+              ))
 
 
-(defn pinch [wind-direction2 heading]
-  (can-sail (mk-turtle :direction heading)))
+(defn pinch [heading wind-direction pointing-angle]
+  (can-sail (mk-turtle :direction heading)
+            {:wind-direction wind-direction}
+            pointing-angle
+            ))
 
-(defn assert-can-sail [wind-direction2 heading]
-  (is (= true (pinch  wind-direction2 heading))))
+(defn assert-can-sail [heading wind-direction pointing-angle ]
+  (is (= true (pinch  heading  wind-direction pointing-angle))))
 
-(defn assert-cannot-sail [wind-direction2 heading]
-  (is (= false (pinch  wind-direction2 heading))))
+(defn assert-cannot-sail [heading wind-direction pointing-angle]
+  (is (= false (pinch heading     wind-direction pointing-angle))))
 
 (deftest test-can-sail
-  (assert-can-sail  180 100)
-  (assert-cannot-sail  180 0)
-  (assert-cannot-sail  180 320)
-  (assert-cannot-sail  180 40))
+  (assert-can-sail      100 180 45)
+  (assert-cannot-sail   0   180 45)
+  (assert-cannot-sail   320 180 45)
+  (assert-cannot-sail   40  180 45)   )
 
 
 (def boat-movement 10)
@@ -76,7 +81,12 @@
   ;; turn to starboard
   (if (= rudder-angle 0)
     ;; aha this is wrong, I need a test to make sure we are not in irons
-    (b-forward boat (boat :maximum-possible-speed))
+    (if (can-point (:direction (:turtle boat))
+                   (:wind-direction sailing-environment)
+                   (:pointing-angle boat)
+                   )
+      (b-forward boat (boat :maximum-possible-speed))
+      boat)
     (let [turn-amount
           (if (< 0 rudder-angle)
             boat-rotation
@@ -89,11 +99,23 @@
           (mk-boat :direction 180 :position {:x 100 :y 100}
                    :pointing-angle 45
                    :speed 1)
-          {:wind-angle 180}
+          {:wind-direction 180}
           0)
          (mk-boat :direction 180 :position {:x 100 :y 101}
                   :pointing-angle 45
-                  :speed 1))))
+                  :speed 1)))
+
+  (is (= (boat-physics
+          (mk-boat :direction 180 :position {:x 100 :y 100}
+                   :pointing-angle 45
+                   :speed 1)
+          {:wind-direction 0}
+          0)
+         (mk-boat :direction 180 :position {:x 100 :y 100}
+                  :pointing-angle 45
+                  :speed 1)))
+
+  )
          
           
 (defn tactics-estimator-internal  [boat sailing-environment termination-predicate iteration-count ]
@@ -105,7 +127,10 @@
       boat
       (recur boat2 sailing-environment termination-predicate (+ iteration-count 1)))))
 
-(defnk tactics-estimator [boat sailing-environment termination-predicate :iteration-count 0]
+(defnk tactics-estimator [boat
+                          sailing-environment
+                          termination-predicate
+                          :iteration-count 0]
   (comment
     hopefully with tactics estimator I can build a cute little dsl
     that looks somehting like this
@@ -123,15 +148,23 @@
     inside of lifted-tack that won't always be the case
 
     )
-  (tactics-estimator-internal boat {} termination-predicate iteration-count)
+  (tactics-estimator-internal
+   boat
+   sailing-environment
+   termination-predicate
+   iteration-count)
   )
 
 (deftest estimator-test
 
-  (tactics-estimator (mk-boat) {} (fn [boat itercount] [0 (> 3 itercount)]))
-  (tactics-estimator (mk-boat :direction 50) {} (fn [boat itercount]
-                                  (println boat)
-                                  [0 (< 3 itercount)]))
+  (tactics-estimator (mk-boat)
+                     {:wind-direction 180}
+                     (fn [boat itercount] [0 (> 3 itercount)]))
+  (tactics-estimator (mk-boat :direction 50)
+                     {:wind-direction 180}
+                     (fn [boat itercount]
+                       (println boat)
+                       [0 (< 3 itercount)]))
   )
 ;;(trace (tactics-estimator (mk-boat) (fn [boat itercount] [0 (> 3 itercount)])))
 
