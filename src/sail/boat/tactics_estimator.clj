@@ -70,7 +70,6 @@
         
 
 (deftest tactics-estimator-test
-
   (is (= [(nodeps/mk-managed-boat :direction 46 :rudder-angle 1) {:count 46}]
            (tactics-estimator
             (nodeps/mk-managed-boat)
@@ -80,17 +79,6 @@
 
 
 (defn sail-instructions
-  [boat sailing-environment global-predicate pred1-pair pred2-pair]
-  (let [estim (fn [boat-notes instr-pair]
-                (let [[instr instr-p] instr-pair
-                      [boat pre-notes] boat-notes]
-                  (tactics-estimator
-                   boat sailing-environment instr
-                   (or-predicates instr-p global-predicate)
-                   pre-notes)))]
-    (estim (estim [boat {:count 0}] pred1-pair) pred2-pair)))
-
-(defn sail-instructions2
   [boat sailing-environment global-predicate & pred-pairs]
   (let [estim (fn [boat-notes instr-pair]
                 (let [[instr instr-p] instr-pair
@@ -135,18 +123,12 @@
     
       
          
-  
 (sail-instructions (nodeps/mk-managed-boat)
-                   {:wind-direction 180}
-                   (make-count-predicate 200)
-                   port-tack-instructions straight-instructions)
-  
-(sail-instructions2 (nodeps/mk-managed-boat)
                     {:wind-direction 180}
                     (make-count-predicate 200)
                     port-tack-instructions straight-instructions)
 
-(sail-instructions2 (nodeps/mk-managed-boat)
+(sail-instructions (nodeps/mk-managed-boat)
                     {:wind-direction 180}
                     (make-count-predicate 200)
                     port-tack-instructions
@@ -155,50 +137,4 @@
                     starboard-tack-instructions
                     straight-instructions
                     )
-
-
-(let [max-steps 200
-      [first-boat first-count]
-      (tactics-estimator
-       (nodeps/mk-managed-boat)
-       {:wind-direction 180}
-       tack-port
-       tack-port-tp {:count 0})
-      [second-boat second-count]
-      (tactics-estimator
-       first-boat
-       {:wind-direction 180}
-       straight
-       (fn [managed-boat sailing-environment tp-notes]
-         [(< 200  (:count tp-notes))
-          (assoc tp-notes :count (+ 1 (:count tp-notes)))])
-       {:count (:count first-count)})
-      ]
-  [first-boat first-count second-boat second-count]
-  )
-
-(let [max-steps 200
-
-      [first-boat first-count]
-      (tactics-estimator
-       (nodeps/mk-managed-boat)
-       {:wind-direction 180}
-       tack-port
-       (or-predicates
-        tack-port-tp
-        (make-count-predicate 200))
-
-       {:count 0})
-      [second-boat second-count]
-      (tactics-estimator
-       first-boat
-       {:wind-direction 180}
-       straight
-       (make-count-predicate 200)
-       first-count
-       )
-      ]
-  [second-boat second-count]
-  )
-
 
