@@ -47,9 +47,7 @@
   ;; the rudder is pointing to starboard, this will make the boat
   ;; turn to starboard
   (let [rudder-angle (:rudder-angle boat)
-        boat-rotation (:rotation boat)
-        ]
-  (println boat)
+        boat-rotation (:rotation boat)]
   (if (= rudder-angle 0)
     (if (can-sail boat sailing-environment)
       (b-forward boat (boat :maximum-possible-speed))

@@ -123,7 +123,7 @@
             (boat-turn-fn
                orig-boat sailing-environment  (:notes managed-boat))
         bp-boat    (assoc orig-boat :rudder-angle rudder-angle)]
-    (println orig-boat rudder-angle)
+;;    (println orig-boat rudder-angle)
     (merge managed-boat
            {:boat (boat-physics-fn bp-boat sailing-environment)
             :notes up-notes})))
@@ -159,7 +159,7 @@
 
 
 (defn pcomment [& comments]
-  (apply println comments)
+;;  (apply println comments)
   )
 
 (comment
