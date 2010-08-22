@@ -11,8 +11,10 @@
    
    [sail.boat.nodeps :only
     [mk-boat pcomment b-forward b-clockwise b-anti-clockwise]]
+   [sail.boat.wind :only
+    [can-sail can-point]]
    )
-  
+
   (:require
    [clojure.contrib.math :as cmath]
    [logo.math :as lmath]
@@ -21,42 +23,6 @@
    ))
 
 
-;; boat stuff
-
-(defn can-point [dir wind-direction pointing-angle]
-  (let [angle-to-wind
-        (abs
-         (angle-diff dir (-c 180 wind-direction)))]
-    (< pointing-angle angle-to-wind)))
-
-(defn can-sail [turtle sailing-environment pointing-angle]
-  (can-point  (:direction turtle)
-              (:wind-direction sailing-environment)
-              pointing-angle
-              ))
-
-
-(defn pinch [heading wind-direction pointing-angle]
-  (can-sail (mk-turtle :direction heading)
-            {:wind-direction wind-direction}
-            pointing-angle
-            ))
-
-(defn assert-can-sail [heading wind-direction pointing-angle ]
-  (is (= true (pinch  heading  wind-direction pointing-angle))))
-
-(defn assert-cannot-sail [heading wind-direction pointing-angle]
-  (is (= false (pinch heading     wind-direction pointing-angle))))
-
-(deftest test-can-sail
-  (assert-can-sail      100 180 45)
-  (assert-cannot-sail   0   180 45)
-  (assert-cannot-sail   320 180 45)
-  (assert-cannot-sail   40  180 45)   )
-
-
-(def boat-movement 10)
-(def boat-rotation 1)
 (comment
   "non-sailor explanation"
     ;;
@@ -75,16 +41,16 @@
   ;;         \
   ;;    
 )
+
 (defn boat-physics [boat sailing-environment]
   ;; a rudder angle of less than 0 means that the trailing edge of
   ;; the rudder is pointing to starboard, this will make the boat
   ;; turn to starboard
-  (let [rudder-angle (:rudder-angle boat)]
+  (let [rudder-angle (:rudder-angle boat)
+        boat-rotation (:rotation boat)
+        ]
   (if (= rudder-angle 0)
-    (if (can-point (:direction boat)
-                   (:wind-direction sailing-environment)
-                   (:pointing-angle boat)
-                   )
+    (if (can-sail boat sailing-environment)
       (b-forward boat (boat :maximum-possible-speed))
       boat)
     (let [turn-amount
