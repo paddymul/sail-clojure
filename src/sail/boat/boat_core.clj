@@ -3,28 +3,17 @@
    [sail.boat.nodeps  :only [mk-managed-boat]]
    [sail.boat.physics :only [boat-physics]]
    [sail.boat.tactics :only [boat-turn]]
-   ))
+   )
+  (:require
+   [sail.boat.nodeps :as nodeps])
+  )
 
 
-(defn update-boat [boat]
-  (let [boat-pair (boat-turn boat)
-        rudder-angle (first boat-pair)
-        boat-notes   (first (rest boat-pair))]
-    (boat-physics boat rudder-angle)))
 
+(def sailing-environment {:wind-angle  180}
 (defn update-managed-boat [managed-boat]
-  (let [orig-boat  (:boat managed-boat)
-        orig-notes (:notes managed-boat)
-        sailing-environment {}
-        boat-pair
-        (boat-turn orig-boat sailing-environment  (:notes managed-boat))
-        rudder-angle (first boat-pair)
-        up-notes   (first (rest boat-pair))]
-    (println orig-boat rudder-angle)
-    (merge managed-boat
-           {:boat (boat-physics orig-boat sailing-environment rudder-angle)
-            :notes up-notes})))
-
+  (nodeps/update-managed-boat
+   sailing-environment boat-physics boat-turn))
 
 
 (comment
