@@ -41,67 +41,6 @@
 
 
 (def tack-outlook 500)
-(comment
-(defn lifted-tack [boat notes wind-direction]
-  "determines which tack will get us closer to the mark
-
-   it does this by extrapolating how far from the mark you would be if
-   you stayed on each tack for 10 * the boat movement figure, maybe it
-   would be better to just compare the mark angle to the pointing
-   angle???
-
-   I'm worried that this function could end up oscilating very quickly
-   so that the boat tacks back and forth without putting much time in
-   on any one tack
-
-   I think I could make it better by taking into account the current
-   position, and how long we expect it to take to tack over to the
-   other position
-
-   then it becomes a comparison not of which tack will get us closer
-   to the mark, but which course of actions in t+ x will get us closer
-   to the mark
-
-"
-  (let [pos     (boat :position)
-        dest    (notes :destination)
-        dir     (boat  :direction)
-        pointing-angle (boat :pointing-angle)
-        tack-a  (-c (-c 180 wind-direction) pointing-angle)
-        tack-b  (+c (-c 180 wind-direction) pointing-angle)
-        tack-a-turn (cmath/abs (angle-diff  dir tack-a))
-        tack-b-turn (cmath/abs (angle-diff  dir tack-b))
-        closer-tack (if (< tack-a-turn tack-b-turn)
-                      tack-a tack-b)
-        mark-distance (point-distance pos dest)
-        tack-outlook  (+ mark-distance 20)
-        tack-a-pos (move-point-dir
-                    pos tack-a
-                    (* (* boat-rotation (- tack-outlook tack-a-turn))
-                       boat-movement))
-        tack-b-pos (move-point-dir
-                    pos tack-b
-                    (* (* boat-rotation (- tack-outlook tack-b-turn))
-                       boat-movement))
-
-
-        tack-a-dist (point-distance tack-a-pos dest)
-        tack-b-dist (point-distance tack-b-pos dest)
-        tack-dist-diff  (cmath/abs (- tack-a-dist tack-b-dist))]
-    (pcomment "tack-a-turn tack-a-dist" tack-a-turn tack-a-dist)
-    (pcomment "tack-b-turn tack-b-dist tack-dist-diff"
-              tack-b-turn tack-b-dist tack-dist-diff)
-
-    (if (> 5 (cmath/abs (- tack-a-dist tack-b-dist)))
-      (do
-        (pcomment " chosing closer-tack" closer-tack)
-        closer-tack)
-      (do
-        (pcomment "tack-a-dist tack-b-dist" tack-a-dist tack-b-dist)
-        (if (>= tack-a-dist tack-b-dist)
-          tack-a
-          tack-b)))))
-)
 
 (defn closer-angle [to angle-a angle-b]
   (let [angle-a-diff
@@ -161,6 +100,27 @@
 
 (defn find-better-tack [boat notes sailing-environment
                         starboard-tack-boat port-tack-boat]
+    "determines which tack will get us closer to the mark
+
+   it does this by extrapolating how far from the mark you would be if
+   you stayed on each tack for 10 * the boat movement figure, maybe it
+   would be better to just compare the mark angle to the pointing
+   angle???
+
+   I'm worried that this function could end up oscilating very quickly
+   so that the boat tacks back and forth without putting much time in
+   on any one tack
+
+   I think I could make it better by taking into account the current
+   position, and how long we expect it to take to tack over to the
+   other position
+
+   then it becomes a comparison not of which tack will get us closer
+   to the mark, but which course of actions in t+ x will get us closer
+   to the mark
+
+"
+
   (let [dir     (boat  :direction)
         dest    (notes :destination)
         starboard-tack-heading  (:direction starboard-tack-boat)
@@ -197,11 +157,8 @@
           (mk-boat :position {:x 100 :y 100} :direction 45)
           (mk-boat :position {:x 0 :y 100} :direction 314))))))
 
-                         
-                         
-
-
-(defn lifted-tack2 [boat notes sailing-environment]
+(defn lifted-tack [boat notes sailing-environment]
+  
   (let [[starboard-tack-boat port-tack-boat]
         (compute-tacks boat notes sailing-environment)]
     (find-better-tack
@@ -215,12 +172,12 @@
          :direction 0
          :position {:x 150 :y 150})]
     (is (= 314
-           (lifted-tack2 s-boat s-notes s-se))))
+           (lifted-tack s-boat s-notes s-se))))
   (let [[s-boat s-notes s-se]
         (mk-s-set :destination {:x 100 :y 100}
                   :position {:x 50 :y 150})]
     (is (= 46
-           (lifted-tack2 s-boat s-notes s-se)))))
+           (lifted-tack s-boat s-notes s-se)))))
 
 
 (defn make-good-velocity [boat sailing-environment notes]
