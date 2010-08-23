@@ -123,10 +123,11 @@
 (defn update-managed-boat [managed-boat
                            sailing-environment  boat-physics-fn boat-turn-fn]
   " this function keeps boat-turn from cheating,  boat cheating gets all the relevent information about its' boat, but it only returns rudder-angle, we merge rudder-angle outside of boat turn, thus boat turn can't put a boat at the finish just because it wants to"
+
   (let [orig-boat  (:boat managed-boat)
         [rudder-angle up-notes]
             (boat-turn-fn
-               orig-boat sailing-environment  (:notes managed-boat))
+               orig-boat  (:notes managed-boat)  sailing-environment)
         bp-boat    (assoc orig-boat :rudder-angle rudder-angle)]
 ;;    (println orig-boat rudder-angle)
     (merge managed-boat
@@ -167,11 +168,5 @@
 ;;  (apply println comments)
   )
 
-(comment
-  (symbol-macro
-   boat-destructure
-   "consider a series of  symbol-macros that takes the place of"
-   (let [
-         pos     ((boat :turtle) :position)
-         dest    (boat :destination)
-         dir     ((boat :turtle) :direction)])))
+ {
+:boat {:position {:x 50, :y 850}, :direction 45, :speed 0, :rudder-angle 0, :rotation 1, :minimum-speed 0.1, :maximum-possible-speed 1, :pointing-angle 45}, :notes {:destination {:x 50, :y 0}}} {:destination {:x 300, :y 100}}

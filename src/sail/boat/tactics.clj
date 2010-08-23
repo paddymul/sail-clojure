@@ -75,6 +75,17 @@
                 )]
     [(:boat starboard-tack-boat) (:boat port-tack-boat)]))
 
+(compute-tacks {:position {:x 50, :y 850},
+                :direction 45, :speed 0, :rudder-angle 0,
+                :rotation 1, :minimum-speed 0.1,
+                :maximum-possible-speed 1, :pointing-angle 45}
+
+               {:destination {:x 300, :y 100}}
+                       {:wind-direction 180}
+ )
+ 
+       
+
 (defn boat-prime [boat]
   (select-keys boat [:position :direction]))
 
@@ -139,26 +150,27 @@
 
     (if (> 5 tack-dist-diff)
       (do
-        (println " chosing closer-tack" closer-tack)
+        ;;(println " chosing closer-tack" closer-tack)
         closer-tack)
       (do
-        (println "tack-a-dist tack-b-dist" starboard-tack-dist port-tack-dist)
+        ;;(println "tack-a-dist tack-b-dist" starboard-tack-dist port-tack-dist)
         (if (<= starboard-tack-dist port-tack-dist)
           starboard-tack-heading port-tack-heading)))))
 
 (deftest test-find-better-tack
   (let [[s-boat s-notes s-se]
         (mk-s-set :position {:x 50 :y 150} :direction 0)]
-
     (is (=
          45
          (find-better-tack
           s-boat s-notes s-se
           (mk-boat :position {:x 100 :y 100} :direction 45)
           (mk-boat :position {:x 0 :y 100} :direction 314))))))
+  
 
 (defn lifted-tack [boat notes sailing-environment]
-  
+  " given the basic sailing variables returns the tack that will get
+us closer to the mark "
   (let [[starboard-tack-boat port-tack-boat]
         (compute-tacks boat notes sailing-environment)]
     (find-better-tack
@@ -177,20 +189,27 @@
         (mk-s-set :destination {:x 100 :y 100}
                   :position {:x 50 :y 150})]
     (is (= 46
+           (lifted-tack s-boat s-notes s-se))))
+
+
+  (let [[s-boat s-notes s-se]
+        (mk-s-set :destination {:x 300, :y 100}
+                  :position {:x 50, :y 850}                 
+                  :direction 107)]
+    (is (= 46
            (lifted-tack s-boat s-notes s-se)))))
 
 
-(defn make-good-velocity [boat sailing-environment notes]
+(defn make-good-velocity [boat notes  sailing-environment]
   "this function's name is a play on velocity-made-good "
   (let [pos     (boat :position)
         dest    (notes :destination)
         dir     (boat :direction)]
-    
     (let [mark-bearing (logot/bearing pos dest)]
       (if (can-sail (assoc boat :direction mark-bearing) sailing-environment)
         (do 
           (pcomment "if we can go straight to the mark we have it easy")
-          (if (> 3 (clojure.contrib.math/abs (angle-diff dir mark-bearing)))
+          (if (> 3 (cmath/abs (angle-diff dir mark-bearing)))
             (do
               (pcomment "if we are pointing at the mark, go towards it!")
               [0 notes])
@@ -201,7 +220,7 @@
               [(updated-heading dir mark-bearing) notes])))
         (do
           (pcomment "aha life is interesting, the mark is upwind of us")
-          (let [lifted-heading (lifted-tack boat notes)]
+          (let [lifted-heading (lifted-tack boat notes sailing-environment)]
             (if (= dir lifted-heading)
               (do
                 (pcomment "if we are on the lifted-tack now, let's go forward")
@@ -210,6 +229,19 @@
                 (pcomment "otherwise, let's start turning towards the mark")
                 [(updated-heading dir lifted-heading) notes]
                 ))))))))
+
+(comment
+(deftest make-good-velocity-sanity
+  (is (=
+       (make-good-velocity {:position {:x 50, :y 850},
+                            :direction 107, :speed 0, :rudder-angle 1,
+                            :rotation 1, :minimum-speed 0.1,
+                            :maximum-possible-speed 1, :pointing-angle 45}
+                           {:destination {:x 300, :y 100}}
+                           {:wind-direction 180})
+       0)))
+)
+
 (comment
 (defn turn-into-irons [boat notes]
   (let [dir     ((boat :turtle) :direction)]
@@ -233,15 +265,24 @@
                                 {:position {:x 90 :y 90}}]}))))
 
 
-(defn boat-turn [boat sailing-environment notes]
-  (let [pos     (boat  :position)
+(defn boat-turn [boat notes sailing-environment]
+;;  (println "mboat sailing-environment notes" boat sailing-environment notes)
+  (let [
+        pos     (boat  :position)
         dest    (notes :destination)
         dir     (boat :direction)]
-    ;;(println "boat-turn-variables" pos dest dir notes)
+
+    (println "---------")
+        (println "notes" notes)
+        (println "pos" pos)
+        (println "dir" dir)
+        (println "---------")
+
+        ;;    (println "boat-turn sailing-environment" boat sailing-environment notes)
     (if (< destination-resolution
            (point-distance dest pos))
       ;; if we aren't at the mark
-      (make-good-velocity  boat sailing-environment notes)
+      (make-good-velocity  boat    notes sailing-environment)
       ;; we are at the mark
       ;;for now we will pretend that reaching the
       ;; mark will take a whole turn, i'm lazy
@@ -253,7 +294,7 @@
                             :position {:x 50 :y 50})
         boat (:boat mb)
         notes (:notes mb)]
-    (is (= [1 notes] (boat-turn boat {:wind-direction 180}  notes)))))
+    (is (= [1 notes] (boat-turn boat  notes  {:wind-direction 180})))))
 
 
 

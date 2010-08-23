@@ -21,10 +21,7 @@
                            :direction 45
                            )))
 
-(reset! boat-a (let [b @boat-a
-                     notes (:notes b)]
-                 (assoc b :notes 
-                        (assoc notes :marks three-leg-course))))
+
 
 (defn sail-draw []
   
