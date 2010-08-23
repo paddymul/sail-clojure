@@ -59,7 +59,7 @@
         (sail-instructions
          (nodeps/mk-managed-boat :boat boat)
                 sailing-environment
-                (make-count-predicate 100)
+                (make-count-predicate 150)
                 starboard-tack-instructions
                 ;;                [straight (mk-decreasing-distance-p dest)]
                 straight-instructions
@@ -68,7 +68,7 @@
         (sail-instructions
                 (nodeps/mk-managed-boat :boat boat)
                 sailing-environment
-                (make-count-predicate 100)
+                (make-count-predicate 150)
                 port-tack-instructions
                 ;;[straight (mk-decreasing-distance-p dest)]
                 straight-instructions
@@ -158,6 +158,7 @@
           starboard-tack-heading port-tack-heading)))))
 
 (deftest test-find-better-tack
+  "figure out how to test for oscilation"
   (let [[s-boat s-notes s-se]
         (mk-s-set :position {:x 50 :y 150} :direction 0)]
     (is (=
@@ -205,17 +206,33 @@ us closer to the mark "
   (let [pos     (boat :position)
         dest    (notes :destination)
         dir     (boat :direction)]
-    (let [mark-bearing (logot/bearing pos dest)]
-      (if (can-sail (assoc boat :direction mark-bearing) sailing-environment)
+    
+    (println "---------make-velocity-good")
+        (println "notes" notes)
+        (println "pos" pos)
+        (println "dir" dir)
+
+
+        (let [mark-bearing (logot/bearing pos dest)
+              mark-boat    (assoc boat :direction mark-bearing)
+              can-we-sail  (can-sail
+                            mark-boat
+                            sailing-environment)
+              ]
+          (println "se " sailing-environment)
+          (println "mark-bearing" mark-bearing)
+          (println "can-we-sail" can-we-sail)
+          (println "---------")
+      (if can-we-sail
         (do 
-          (pcomment "if we can go straight to the mark we have it easy")
-          (if (> 3 (cmath/abs (angle-diff dir mark-bearing)))
+          (println "if we can go straight to the mark we have it easy")
+          (if (> 2 (cmath/abs (angle-diff dir mark-bearing)))
             (do
-              (pcomment "if we are pointing at the mark, go towards it!")
+              (println "if we are pointing at the mark, go towards it!")
               [0 notes])
             (do
               ;;(println "mark-bearing direction"  mark-bearing dir)
-              (pcomment "let's start turning towards the mark")
+              (println "let's start turning towards the mark")
               ;; hopefully the signs are correct
               [(updated-heading dir mark-bearing) notes])))
         (do
@@ -223,10 +240,10 @@ us closer to the mark "
           (let [lifted-heading (lifted-tack boat notes sailing-environment)]
             (if (= dir lifted-heading)
               (do
-                (pcomment "if we are on the lifted-tack now, let's go forward")
+                (println "if we are on the lifted-tack now, let's go forward")
                 [0 notes])
               (do
-                (pcomment "otherwise, let's start turning towards the mark")
+                (println "otherwise, let's start turning towards the mark")
                 [(updated-heading dir lifted-heading) notes]
                 ))))))))
 
@@ -240,15 +257,6 @@ us closer to the mark "
                            {:destination {:x 300, :y 100}}
                            {:wind-direction 180})
        0)))
-)
-
-(comment
-(defn turn-into-irons [boat notes]
-  (let [dir     ((boat :turtle) :direction)]
-      (if (= dir (-c 180 wind-direction))
-        [0  notes] ;; if we are pointing at the wind stay there
-        [-1 notes] ;; otherwise turn into the wind, to starboard)
-        )))
 )
 
 (defn update-marks [notes]
@@ -272,21 +280,18 @@ us closer to the mark "
         dest    (notes :destination)
         dir     (boat :direction)]
 
-    (println "---------")
-        (println "notes" notes)
-        (println "pos" pos)
-        (println "dir" dir)
-        (println "---------")
-
         ;;    (println "boat-turn sailing-environment" boat sailing-environment notes)
     (if (< destination-resolution
            (point-distance dest pos))
       ;; if we aren't at the mark
+
       (make-good-velocity  boat    notes sailing-environment)
       ;; we are at the mark
       ;;for now we will pretend that reaching the
       ;; mark will take a whole turn, i'm lazy
-      [0 (update-marks notes)])))
+      (do
+        (println "calling-update-marks")
+        [0 (update-marks notes)]))))
 
 
 (deftest test-boat-turn
@@ -302,5 +307,14 @@ us closer to the mark "
 (comment
   I think I should make some optimize functions, these will be useful with tactics estimator
   
+
+(comment
+(defn turn-into-irons [boat notes]
+  (let [dir     ((boat :turtle) :direction)]
+      (if (= dir (-c 180 wind-direction))
+        [0  notes] ;; if we are pointing at the wind stay there
+        [-1 notes] ;; otherwise turn into the wind, to starboard)
+        )))
+)
 
   )

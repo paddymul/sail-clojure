@@ -19,6 +19,9 @@
                                (nth sail.course.core/three-leg-course 0))
                            :position {:x 50 :y 850}
                            :direction 45
+                           :pointing-angle 44.5
+                           :rotation 1.1
+                           :maximum-possible-speed 1.3
                            )))
 
 
@@ -29,7 +32,7 @@
   (draw-course three-leg-course)
   (reset! boat-a (update-managed-boat @boat-a))
   (draw-boat (:boat @boat-a))
-  (when (> (frame-count) 1000)
+  (when (> (frame-count) 100)
     (/ 1 0)))
 
 
