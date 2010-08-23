@@ -56,7 +56,7 @@
           (if (< 0 rudder-angle)
             boat-rotation
             (- 0 boat-rotation))]
-      (pcomment "turn-amount" turn-amount)
+      ;;(pcomment "turn-amount" turn-amount)
       (b-clockwise boat turn-amount)))))
 
 (deftest boat-physics-test
