@@ -122,7 +122,8 @@
                 sailing-environment
                 (make-count-predicate 100)
                 starboard-tack-instructions
-                [straight (mk-decreasing-distance-p dest)]
+                ;;                [straight (mk-decreasing-distance-p dest)]
+                straight-instructions
                 )
         [port-tack-boat port-tack-boat-n]
         (sail-instructions
@@ -130,30 +131,33 @@
                 sailing-environment
                 (make-count-predicate 100)
                 port-tack-instructions
-                [straight (mk-decreasing-distance-p dest)])]
+                ;;[straight (mk-decreasing-distance-p dest)]
+                straight-instructions
+                )]
     [(:boat starboard-tack-boat) (:boat port-tack-boat)]))
 
 (defn boat-prime [boat]
   (select-keys boat [:position :direction]))
 
+  
+(defnk mk-s-set [:direction 0
+                 :position  {:x 100 :y 100}
+                 :destination {:x 100 :y 100}
+                 :wind-direction 180]
+  [(mk-boat :direction direction :position position)
+   {:destination destination}
+   {:wind-direction wind-direction}])
+
 (comment
-  "I get nasty numbers here "
 (deftest test-compute-tacks
-  (let [mb (mk-managed-boat :destination {:x 100 :y 100}
-                            :position {:x 150 :y 150})
-        boat (:boat mb)
-        notes (:notes mb)
-        se {:wind-direction 180}]
+  (let [[s-boat s-notes s-se] (mk-s-set
+                               :position {:x 150 :y 150})]
     (is (= 314
-           (map boat-prime (compute-tacks boat notes se)))))
-  (let [mb (mk-managed-boat :destination {:x 100 :y 100}
-                            :position {:x 50 :y 150})
-        boat (:boat mb)
-        notes (:notes mb)
-        se {:wind-direction 180}]
-    (is (= 45 
-           (map boat-prime (compute-tacks boat notes se))))))
-)
+           (map boat-prime (compute-tacks s-boat s-notes s-se)))))
+  (let [[s-boat s-notes s-se] (mk-s-set
+                               :position {:x 50 :y 150})]
+    (is (= 45
+           (map boat-prime (compute-tacks s-boat s-notes s-se)))))))
 
 (defn find-better-tack [boat notes sailing-environment
                         starboard-tack-boat port-tack-boat]
@@ -170,25 +174,17 @@
                         dest)
         tack-dist-diff (cmath/abs (- starboard-tack-dist port-tack-dist))]
     (pcomment "tack-a-pos tack-b-pos"
-              (:position (:boat starboard-tack-boat))
-              (:position (:boat port-tack-boat)))
+              (:position  starboard-tack-boat)
+              (:position  port-tack-boat))
 
     (if (> 5 tack-dist-diff)
       (do
-        (pcomment " chosing closer-tack" closer-tack)
+        (println " chosing closer-tack" closer-tack)
         closer-tack)
       (do
-        (pcomment "tack-a-dist tack-b-dist" starboard-tack-dist port-tack-dist)
-        (if (>= starboard-tack-dist port-tack-dist)
+        (println "tack-a-dist tack-b-dist" starboard-tack-dist port-tack-dist)
+        (if (<= starboard-tack-dist port-tack-dist)
           starboard-tack-heading port-tack-heading)))))
-
-(defnk mk-s-set [:direction 0
-                 :position  {:x 100 :y 100}
-                 :destination {:x 100 :y 100}
-                 :wind-direction 180]
-  [(mk-boat :direction direction :position position)
-   {:destination destination}
-   {:wind-direction wind-direction}])
 
 (deftest test-find-better-tack
   (let [[s-boat s-notes s-se]
@@ -199,7 +195,7 @@
          (find-better-tack
           s-boat s-notes s-se
           (mk-boat :position {:x 100 :y 100} :direction 45)
-          (mk-boat :position {:x 0 :y 100} :direction 45))))))
+          (mk-boat :position {:x 0 :y 100} :direction 314))))))
 
                          
                          
@@ -211,23 +207,22 @@
     (find-better-tack
      boat notes sailing-environment
      starboard-tack-boat port-tack-boat)))
-(comment
+
 (deftest test-lifted-tack
-  (let [mb (mk-managed-boat :destination {:x 100 :y 100}
-                            :position {:x 150 :y 150})
-        boat (:boat mb)
-        notes (:notes mb)
-        se {:wind-direction 180}]
+  (let [[s-boat s-notes s-se]
+        (mk-s-set
+         :destination {:x 100 :y 100}
+         :direction 0
+         :position {:x 150 :y 150})]
     (is (= 314
-           (lifted-tack2 boat notes se))))
-  (let [mb (mk-managed-boat :destination {:x 100 :y 100}
-                            :position {:x 50 :y 150})
-        boat (:boat mb)
-        notes (:notes mb)
-        se {:wind-direction 180}]
-    (is (= 45 
-           (lifted-tack2 boat notes se)))))
-)
+           (lifted-tack2 s-boat s-notes s-se))))
+  (let [[s-boat s-notes s-se]
+        (mk-s-set :destination {:x 100 :y 100}
+                  :position {:x 50 :y 150})]
+    (is (= 46
+           (lifted-tack2 s-boat s-notes s-se)))))
+
+
 (defn make-good-velocity [boat sailing-environment notes]
   "this function's name is a play on velocity-made-good "
   (let [pos     (boat :position)
@@ -243,7 +238,7 @@
               (pcomment "if we are pointing at the mark, go towards it!")
               [0 notes])
             (do
-              (println "mark-bearing direction"  mark-bearing dir)
+              ;;(println "mark-bearing direction"  mark-bearing dir)
               (pcomment "let's start turning towards the mark")
               ;; hopefully the signs are correct
               [(updated-heading dir mark-bearing) notes])))
@@ -268,7 +263,7 @@
 )
 
 (defn update-marks [notes]
-  (println " update marks ")
+  ;;  (println " update marks ")
   (let [marks      (notes :marks)
         new-mark   (first marks)
         new-marks  (rest marks)]
@@ -285,7 +280,7 @@
   (let [pos     (boat  :position)
         dest    (notes :destination)
         dir     (boat :direction)]
-    (println "boat-turn-variables" pos dest dir notes)
+    ;;(println "boat-turn-variables" pos dest dir notes)
     (if (< destination-resolution
            (point-distance dest pos))
       ;; if we aren't at the mark
