@@ -32,7 +32,7 @@
   (apply stroke-float args)
   turtle)
 
-(def rudder-exageration 30)
+(def rudder-exageration -30)
 (defn draw-boat [boat]
   (stroke-float 90)  ;; sets the turtle color
   (stroke-weight 5)  ;; sets the turtle size
