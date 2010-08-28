@@ -336,6 +336,7 @@ us closer to the mark "
   (let [marks      (notes :marks)
         new-mark   (first marks)
         new-marks  (rest marks)]
+    
     (merge notes {:marks new-marks :destination (:position new-mark)})))
 
 (deftest update-marks-test
@@ -351,7 +352,7 @@ us closer to the mark "
         pos     (boat  :position)
         dest    (notes :destination)
         dir     (boat :direction)]
-
+    (println       (notes :marks))
     ;;    (println "boat-turn sailing-environment" boat sailing-environment notes)
     (if (< destination-resolution
            (point-distance dest pos))
@@ -373,6 +374,8 @@ us closer to the mark "
         notes (:notes mb)]
     (is (= [1 notes] (boat-turn boat  {:wind-direction 180}   notes )))))
 
+(defn update-marks-turn [boat sailing-environment notes ]
+  [0 (update-marks notes)])
 
 (defn port-tack [boat sailing-environment notes ]
   (let [mb (mk-managed-boat :boat boat)]

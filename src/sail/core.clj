@@ -13,18 +13,26 @@
 
 
 
-(def boat-a (atom
-             (mk-managed-boat :destination
-                              (:position
-                               (nth sail.course.core/three-leg-course 0))
-                           :position {:x 50 :y 850}
-                           :direction 45
-                           :pointing-angle 44.5
-                           :rotation 1.1
-                           :maximum-possible-speed 1.3
-                           )))
+(def boat-a
+     (atom
+      (let [orig-boat
+            (mk-managed-boat :destination
+                             (:position
+                              (nth sail.course.core/three-leg-course 0))
+                             :position {:x 50 :y 850}
+                             ;;:direction 45
+                             :pointing-angle 44.5
+                             :rotation 1.1
+                             :maximum-possible-speed 3.3
+                             )]
+        (assoc orig-boat :notes
+               (assoc 
+                (:notes orig-boat)
+                :marks sail.course.core/three-leg-course ))
 
+        ))
 
+     )
 
 (defn sail-draw []
   
@@ -32,10 +40,17 @@
   (draw-course three-leg-course)
   (reset! boat-a (update-managed-boat @boat-a))
   (draw-boat (:boat @boat-a))
-  (when (> (frame-count) 100)
+  (when (> (frame-count) 1000)
     (/ 1 0)))
 
-
+(defn run-app [] 
 (rerun-defapplet logo-play2 :title "logoemulation"
                  :size [800 800]
                  :setup setup :draw sail-draw)
+)
+(println "hello")
+(defn play []
+  (doseq [a [0 1 2 3 4 5 6 7 8 9 10]]
+    (reset! boat-a (update-managed-boat @boat-a))))
+;;(play)
+(run-app)
