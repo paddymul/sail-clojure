@@ -133,6 +133,10 @@ in this course of action "
   [1 notes])
 
 
+(defn tack-starboard [boat sailing-environment notes]
+  [-1 notes])
+
+
 (defn tack-port-tp [managed-boat sailing-environment tp-notes]
   [(and
     (wind/can-sail (:boat managed-boat) sailing-environment)
@@ -140,17 +144,39 @@ in this course of action "
    tp-notes
    ])
 
-(defn tack-starboard [boat sailing-environment notes]
-  [-1 notes])
-
 
 (defn tack-starboard-tp [managed-boat sailing-environment tp-notes]
   [(and
     (wind/can-sail (:boat managed-boat) sailing-environment)
-    (not (wind/boat-on-port-heading (:boat managed-boat) sailing-environment)))
+     (wind/boat-on-starboard-heading (:boat managed-boat) sailing-environment))
    tp-notes
    ])
 
+(deftest tack-port-tp-test
+  (is (= [true {}]
+         (tack-port-tp
+          (nodeps/mk-managed-boat 
+           :position {:x 50 :y 850}
+           :direction 45
+           :pointing-angle 44.5
+           :rotation 1.1
+           :maximum-possible-speed 1.3
+           )
+
+          {:wind-direction 180} {})))
+  (is (= [false {}]
+         (tack-starboard-tp
+          (nodeps/mk-managed-boat 
+           :position {:x 50 :y 850}
+           :direction 45
+           :pointing-angle 44.5
+           :rotation 1.1
+           :maximum-possible-speed 1.3
+           )
+
+          {:wind-direction 180} {})))
+
+  )
 
 (def port-tack-instructions [tack-port tack-port-tp])
 (def starboard-tack-instructions [tack-starboard tack-starboard-tp])
