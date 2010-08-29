@@ -39,13 +39,16 @@
                   physics/boat-physics boat-thinking-fn)
         [should-terminate new-tp-notes]
         (termination-predicate new-boat sailing-environment
-                               termination-predicate-notes)]
+                               termination-predicate-notes
+
+                               )]
     ;;  (println "should-terminate new-tp-notes" should-terminate new-tp-notes)
     (if should-terminate
       [new-boat new-tp-notes]
       (recur
        new-boat sailing-environment boat-thinking-fn
        termination-predicate new-tp-notes))))
+
 
 
 (defn straight [boat sailing-environment notes]
@@ -214,7 +217,7 @@ in this course of action "
                    (make-count-predicate 200)
                    port-tack-instructions straight-instructions)
 
-(sail-instructions (nodeps/mk-managed-boat)
+(first (sail-instructions (nodeps/mk-managed-boat)
                    {:wind-direction 180}
                    (make-count-predicate 200)
                    port-tack-instructions
@@ -223,7 +226,7 @@ in this course of action "
                    starboard-tack-instructions
                    straight-instructions
                    )
-
+)
 (deftest sail-instruction-test
   "I want to make sure that we can go straight for n turns and then turn "
   (is (not (=

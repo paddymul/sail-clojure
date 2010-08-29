@@ -12,8 +12,8 @@
   ))
 
 
-
 (def sailing-environment {:wind-direction  180})
+;;(def sailing-environment {:wind-direction  0})
 
 (defn update-managed-boat [managed-boat]
   (nodeps/update-managed-boat
@@ -23,6 +23,7 @@
    boat-turn
    ;;port-tack
    ;;tac/starboard-tack
+   ;;tac/update-marks-turn
    ))
 (def boat-a (atom (nodeps/mk-managed-boat)))
 (defn play []

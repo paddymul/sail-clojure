@@ -130,7 +130,7 @@
         dest    (notes :destination)
         starboard-tack-heading  (:direction starboard-tack-boat)
         port-tack-heading   (:direction port-tack-boat)
-        starboard-tack-dist (point-distance
+        starboard-tack-dist  (point-distance
                              (:position  starboard-tack-boat)
                              dest)
         port-tack-dist (point-distance
@@ -171,61 +171,60 @@
 
 
 (defn compute-starboard-tack [boat  sailing-environment notes]
-  (let [dest    (notes :destination)]
-    (first (sail-instructions (nodeps/mk-managed-boat :boat boat)
-                              sailing-environment (make-count-predicate 150)
-                              starboard-tack-instructions
-                              [straight (mk-decreasing-distance-p dest)]
-                              ;;straight-instructions
-                              ))))
+  (let [dest    (notes :destination)
+
+    [new-boat si-notes]
+     (sail-instructions (nodeps/mk-managed-boat :boat boat)
+                        sailing-environment
+                        ;;                        (make-count-predicate 150 :cname "glob")
+                        (make-count-predicate 100 :cname "glob")
+                        starboard-tack-instructions
+                        ;[straight (mk-decreasing-distance-p dest)]
+                        [straight (make-count-predicate 120)]
+                              )]
+        (println "dest" dest)
+    [  new-boat   (:countglob si-notes)]
+
+    ))
 
 
-(deftest test-compute-tacks
+(deftest test-compute-starboard-tack
   (is (boat-close-enough
        {:position {:x 75 :y 75} :direction 314}
+        (first
        (let [[s-boat s-notes s-se] (mk-s-set
                                     :position {:x 150 :y 150})]
-         (compute-starboard-tack s-boat s-se s-notes))))
+         (compute-starboard-tack s-boat s-se s-notes))
+
+       )
+
+       ))
   (is  (boat-close-enough
         {:position {:x 75 :y 75} :direction 314}
+        (first
         (let [[s-boat s-notes s-se]
               (mk-s-set :direction 314 :position {:x 150 :y 150})]
           (compute-starboard-tack s-boat s-se s-notes)))
-       ))
+       )))
 
-
-
-
-(comment
-  (let [[s-boat s-notes s-se] (mk-s-set
-                               :position {:x 50 :y 150})]
-    (is (= 45
-           (map boat-prime (compute-tacks s-boat s-se s-notes )))))
-
-  (compute-tacks {:position {:x 50, :y 850},
-                  :direction 45, :speed 0, :rudder-angle 0,
-                  :rotation 1, :minimum-speed 0.1,
-                  :maximum-possible-speed 1, :pointing-angle 45}
-                 {:wind-direction 180}
-                 {:destination {:x 300, :y 100}}
-
-                 )
-  )
 
 (defn compute-port-tack [boat  sailing-environment notes]
-  (let [dest    (notes :destination)]
-    (first (sail-instructions (nodeps/mk-managed-boat :boat boat)
-                              sailing-environment
-                              (make-count-predicate 150)
-                              port-tack-instructions
-                              [straight (mk-decreasing-distance-p dest)]
-                              ;;straight-instructions
-                              ))))
+  (let [dest    (notes :destination)    
+        [new-boat si-notes]
+        (sail-instructions (nodeps/mk-managed-boat :boat boat)
+                           sailing-environment
+                           (make-count-predicate 150 :cname "glob")
+                           port-tack-instructions
+                           [straight (mk-decreasing-distance-p dest)]
+                           
+                           )]
+    [ new-boat   (:countglob si-notes)]
+    ))
 
 (defn compute-tacks [boat  sailing-environment notes]
-  [(:boat (compute-starboard-tack boat  sailing-environment notes))
-;;   {:position {:x 9000 :y 9000} :direction 45}
-  (:boat (compute-port-tack boat  sailing-environment notes))
+  [(:boat (first (compute-starboard-tack boat  sailing-environment notes)))
+
+  (:boat (first (compute-port-tack boat  sailing-environment notes)))
 
    ])
 
@@ -352,7 +351,7 @@ us closer to the mark "
         pos     (boat  :position)
         dest    (notes :destination)
         dir     (boat :direction)]
-    (println       (notes :marks))
+;;    (println       (notes :marks))
     ;;    (println "boat-turn sailing-environment" boat sailing-environment notes)
     (if (< destination-resolution
            (point-distance dest pos))
