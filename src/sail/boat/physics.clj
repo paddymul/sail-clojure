@@ -12,7 +12,7 @@
    [sail.boat.nodeps :only
     [mk-boat pcomment b-forward b-clockwise b-anti-clockwise]]
    [sail.boat.wind :only
-    [can-sail can-point]]
+    [can-sail can-point angle-to-wind]]
    )
 
   (:require
@@ -42,6 +42,49 @@
   ;;    
 )
 
+(defn sail-power [ang-to-wind]
+  "eventually this should be a property of a boat, not the global
+   environment "
+  (let [rel-angle (cmath/abs ang-to-wind)]
+    (cond (< rel-angle 30) -0.1
+          (< rel-angle 60) 0.1
+          (< rel-angle 120) 0.3
+          (< rel-angle 180) 0.2)))
+
+(defn acceleration-boat-physics [boat sailing-environment]
+  ;; a rudder angle of less than 0 means that the trailing edge of
+  ;; the rudder is pointing to starboard, this will make the boat
+  ;; turn to starboard
+  (let [rudder-angle (:rudder-angle boat)
+        boat-rotation (:rotation boat)
+        turned-boat 
+        (if (= rudder-angle 0)    
+          boat
+        (let [turn-amount
+              (if (< 0 rudder-angle)
+                boat-rotation
+                (- 0 boat-rotation))]
+          ;;(pcomment "turn-amount" turn-amount)
+          (b-clockwise boat turn-amount)))
+        old-boat-speed (if (>= (:speed boat) 0)
+                         0.1
+                         (:speed boat))
+        new-boat-speed (+
+                        old-boat-speed
+                        (* old-boat-speed
+                           (sail-power (angle-to-wind
+                                        (:direction boat)
+                                        (:wind-direction sailing-environment)))))]
+    (println "old-boat-speed" old-boat-speed new-boat-speed)
+    (assoc
+        (b-forward turned-boat new-boat-speed)
+      :speed new-boat-speed)))
+
+
+    
+      
+
+
 (defn boat-physics [boat sailing-environment]
   ;; a rudder angle of less than 0 means that the trailing edge of
   ;; the rudder is pointing to starboard, this will make the boat
@@ -58,6 +101,7 @@
             (- 0 boat-rotation))]
       ;;(pcomment "turn-amount" turn-amount)
       (b-clockwise boat turn-amount)))))
+
 
 (deftest boat-physics-test
   (is (= (boat-physics

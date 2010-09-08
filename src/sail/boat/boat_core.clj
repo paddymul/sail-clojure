@@ -2,7 +2,7 @@
   (:use
    [clojure.test :only [is deftest]]
    [sail.boat.nodeps  :only [mk-managed-boat]]
-   [sail.boat.physics :only [boat-physics]]
+   [sail.boat.physics :only [boat-physics acceleration-boat-physics]]
    [sail.boat.tactics :only [boat-turn port-tack]]
    )
   (:require
@@ -14,12 +14,25 @@
 
 
 (def sailing-environment {:wind-direction  180})
-
+(comment
 (defn update-managed-boat [managed-boat]
   (nodeps/update-managed-boat
    managed-boat
    sailing-environment boat-physics
    
+   boat-turn
+   ;;port-tack
+   ;;tac/starboard-tack
+   ))
+)
+
+(defn update-managed-boat [managed-boat]
+  (nodeps/update-managed-boat
+   managed-boat
+   sailing-environment
+
+   ;;boat-physics
+   acceleration-boat-physics
    boat-turn
    ;;port-tack
    ;;tac/starboard-tack

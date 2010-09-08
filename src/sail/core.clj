@@ -40,7 +40,7 @@
   (draw-course three-leg-course)
   (reset! boat-a (update-managed-boat @boat-a))
   (draw-boat (:boat @boat-a))
-  (when (> (frame-count) 1000)
+  (when (> (frame-count) 500)
     (/ 1 0)))
 
 (defn run-app [] 
