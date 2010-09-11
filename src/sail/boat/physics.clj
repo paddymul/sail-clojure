@@ -46,10 +46,24 @@
   "eventually this should be a property of a boat, not the global
    environment "
   (let [rel-angle (cmath/abs ang-to-wind)]
-    (cond (< rel-angle 30) -0.1
+    (cond (< rel-angle 30) -0.02
           (< rel-angle 60) 0.1
           (< rel-angle 120) 0.3
-          (< rel-angle 180) 0.2)))
+          (<= rel-angle 180) 0.2)))
+
+(defn assure-boat-speed [boat]
+  "this makes sure that the boat speed stays between the minimum boat
+   speed and the maximum boat speed "
+  (let [speed       (:speed boat)
+        min-speed   (:minimum-speed boat)
+        max-speed   (:maximum-possible-speed boat)]
+    (if (< speed min-speed)
+      min-speed
+      (if (> speed max-speed)
+        max-speed
+        speed))))
+
+  
 
 (defn acceleration-boat-physics [boat sailing-environment]
   ;; a rudder angle of less than 0 means that the trailing edge of
@@ -66,21 +80,28 @@
                 (- 0 boat-rotation))]
           ;;(pcomment "turn-amount" turn-amount)
           (b-clockwise boat turn-amount)))
-        old-boat-speed (if (>= (:speed boat) 0)
-                         0.1
-                         (:speed boat))
+        old-boat-speed (assure-boat-speed boat)
+        sp (sail-power (angle-to-wind
+                        (:direction boat)
+                        (:wind-direction sailing-environment)))
+
         new-boat-speed (+
                         old-boat-speed
-                        (* old-boat-speed
-                           (sail-power (angle-to-wind
-                                        (:direction boat)
-                                        (:wind-direction sailing-environment)))))]
+                        (* old-boat-speed sp))
+        ;;blah (println "sailpower new-boat-speed" sp new-boat-speed)
+        ]
     (println "old-boat-speed" old-boat-speed new-boat-speed)
-    (assoc
-        (b-forward turned-boat new-boat-speed)
-      :speed new-boat-speed)))
+    (let [advanced-boat (b-forward turned-boat new-boat-speed)]
+      (assoc advanced-boat :speed 
+             new-boat-speed))))
 
-
+(deftest acceleration-boat-physics-test
+(is (= 1 (acceleration-boat-physics
+          (mk-boat :rudder-angle 0
+                   :direction 180 :position {:x 100 :y 100}
+                   :pointing-angle 45
+                   :speed 1)
+          {:wind-direction 180}))))
     
       
 
