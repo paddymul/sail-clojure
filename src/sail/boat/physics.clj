@@ -47,9 +47,9 @@
    environment "
   (let [rel-angle (cmath/abs ang-to-wind)]
     (cond (< rel-angle 30) -0.02
-          (< rel-angle 60) 0.1
-          (< rel-angle 120) 0.3
-          (<= rel-angle 180) 0.2)))
+          (< rel-angle 60) 0.01
+          (< rel-angle 120) 0.03
+          (<= rel-angle 180) 0.02)))
 
 (defn assure-boat-speed [boat]
   "this makes sure that the boat speed stays between the minimum boat
@@ -90,7 +90,7 @@
                         (* old-boat-speed sp))
         ;;blah (println "sailpower new-boat-speed" sp new-boat-speed)
         ]
-    (println "old-boat-speed" old-boat-speed new-boat-speed)
+;;    (println "old-boat-speed" old-boat-speed new-boat-speed)
     (let [advanced-boat (b-forward turned-boat new-boat-speed)]
       (assoc advanced-boat :speed 
              new-boat-speed))))
