@@ -36,7 +36,8 @@
                          termination-predicate termination-predicate-notes]
   (let [new-boat (nodeps/update-managed-boat
                   managed-boat sailing-environment
-                  physics/boat-physics boat-thinking-fn)
+                  ;;physics/boat-physics boat-thinking-fn)
+                  physics/acceleration-boat-physics boat-thinking-fn)
         [should-terminate new-tp-notes]
         (termination-predicate new-boat sailing-environment
                                termination-predicate-notes)]
