@@ -312,10 +312,10 @@ us closer to the mark "
                      (> 8  (cmath/abs (angle-diff
                                        dir lifted-heading))))
               (do
-      (println "if we are on the lifted-tack now, let's go forward")
+;;      (println "if we are on the lifted-tack now, let's go forward")
                 [0 notes])
               (do
-                (println "otherwise, let's start turning towards the mark")
+;;                (println "otherwise, let's start turning towards the mark")
                 [(updated-heading dir lifted-heading) notes]
                 ))))))))
 
@@ -347,12 +347,12 @@ us closer to the mark "
 
 
 (defn boat-turn [boat sailing-environment notes]
-  ;;  (println "mboat sailing-environment notes" boat sailing-environment notes)
+;;    (println "mboat sailing-environment notes" boat sailing-environment notes)
   (let [
         pos     (boat  :position)
         dest    (notes :destination)
         dir     (boat :direction)]
-    (println       (notes :marks))
+;;    (println       (notes :marks))
     ;;    (println "boat-turn sailing-environment" boat sailing-environment notes)
     (if (< destination-resolution
            (point-distance dest pos))
