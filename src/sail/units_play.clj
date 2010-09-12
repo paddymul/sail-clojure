@@ -34,7 +34,6 @@
 
 (defn raw-turtle [turtle]
   (let [pos (:position turtle)]
-    (println "raw-turtle" pos)
     {:direction (:direction turtle)
      :position
            {:x         (raw-px (:x pos))
@@ -50,6 +49,5 @@
    (draw-forward (raw-turtle turtle)
                  (raw-px dist))))
 (defn draw-point-unit [turtle]
-  (println "draw-point-unit" turtle)
    (draw-point (:position (raw-turtle turtle))))
   
