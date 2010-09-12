@@ -1,11 +1,22 @@
-(ns sail.course.core
-  (:use
-   [logo.turtle-prim :only [mk-turtle]]
+(clojure.core/use 'nstools.ns)
+;;(ns+ unit-demo
+(ns+  sail.course.core
+      (:clone nstools.generic-math)
+      (:from units dimension? in-units-of)
+      (:use
+       [logo.turtle-prim :only [mk-turtle]]
+       )
+      (:require
+                [units.si          :as si]
+                [units]
+                [sail.units-play    :as su]
    ))
+
+
 
 (defn make-mark [x y]
   (mk-turtle
-         :position {:x x :y y}
+         :position {:x (si/m x) :y (si/m y) }
          :direction 0))
 (def three-leg-course
      [(make-mark 300  100)  (make-mark 100  300)  (make-mark 400  300)])  

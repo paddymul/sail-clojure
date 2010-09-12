@@ -1,11 +1,11 @@
 (clojure.core/use 'nstools.ns)
-;;(ns+ unit-demo
 (ns+ sail.boat.draw
   (:clone nstools.generic-math)
   (:from units dimension? in-units-of)
   (:use
    [logo.draw   :only [draw-point draw-forward]]
    [logo.turtle-prim   :only [mk-turtle clockwise forward]]
+   [sail.units-play    :only [draw-forward-unit]]
    [rosado.processing :only [ stroke-weight stroke-float]]
    )
   (:require
@@ -15,29 +15,11 @@
                 [sail.boat.nodeps  :as nodeps]
    ))
 
-(defn raw-turtle [turtle]
-  (let [pos (:position turtle)]
-    (println "raw-turtle" pos)
-    {:direction (:direction turtle)
-     :position
-           {:x         (su/raw-px (:x pos))
-            :y         (su/raw-px (:y pos))}}))
-(defn unit-turtle [turtle]
-  (mk-turtle :position {:x (su/px (:x (:position turtle)))
-                        :y (su/px (:y (:position turtle)))}
-             :direction (:direction turtle)))
 
 (def unit-boat
      (nodeps/mk-managed-boat
       :position {:x (* 3 si/m) :y (* 8 si/m)}
       :direction 90))
-
-(defn draw-forward-unit [turtle dist]
-  {:pre [(si/length? dist)]}
-  (unit-turtle
-   (draw-forward (raw-turtle turtle)
-                 (su/raw-px dist))))
-
 
 (defn turtle-from-boat [boat]
   (mk-turtle :position (:position boat)

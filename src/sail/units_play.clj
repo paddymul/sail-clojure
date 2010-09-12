@@ -3,6 +3,9 @@
 (ns+ sail.units-play
   (:clone nstools.generic-math)
   (:from units dimension? in-units-of)
+  (:use    [logo.draw   :only [draw-point draw-forward]]
+           [logo.turtle-prim   :only [mk-turtle clockwise forward]]
+           )
   (:require
              [units.si :as si]
              [units]
@@ -16,7 +19,7 @@
 (def five-meter  (* 5 si/m))
 (def one-hour    (* 1 si/h))
 (units/defunit px "Pixels" (* si/m 500))
-(units/defunit px "Pixels" (/ si/m 5))
+(units/defunit px "Pixels" (* si/m 1))
 
 (defn in-px [measurement]
   {:pre [(si/length? measurement)]}
@@ -28,3 +31,25 @@
 
 
 
+
+(defn raw-turtle [turtle]
+  (let [pos (:position turtle)]
+    (println "raw-turtle" pos)
+    {:direction (:direction turtle)
+     :position
+           {:x         (raw-px (:x pos))
+            :y         (raw-px (:y pos))}}))
+(defn unit-turtle [turtle]
+  (mk-turtle :position {:x (px (:x (:position turtle)))
+                        :y (px (:y (:position turtle)))}
+             :direction (:direction turtle)))
+
+(defn draw-forward-unit [turtle dist]
+  {:pre [(si/length? dist)]}
+  (unit-turtle
+   (draw-forward (raw-turtle turtle)
+                 (raw-px dist))))
+(defn draw-point-unit [turtle]
+  (println "draw-point-unit" turtle)
+   (draw-point (:position (raw-turtle turtle))))
+  

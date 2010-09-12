@@ -12,10 +12,7 @@
    [sail.course.draw     :only [draw-course]]
    [sail.boat.boat-core  :only [update-managed-boat]]
    ;;[sail.boat.draw       :only [draw-boat]]
-   [sail.boat.draw       :only [draw-boat
-                                draw-boat-unit
-                                draw-forward-unit
-                                ]]
+   [sail.boat.draw       :only [draw-boat-unit]]
    [sail.boat.nodeps     :only [mk-managed-boat]])
     (:require
                 [units.si          :as si]
@@ -57,8 +54,7 @@
 (defn sail-draw []
   (draw-course three-leg-course)
   ;;(reset! boat-a (update-managed-boat @boat-a))
-  ;;(draw-boat (:boat @boat-a))
-  ;;(draw-forward-unit (:boat unit-boat) (* si/m 150))
+  ;;(draw-boat-unit (:boat @boat-a))
   (draw-boat-unit (:boat unit-boat))
   (when (> (frame-count) 5)
     (/ 1 0)))
