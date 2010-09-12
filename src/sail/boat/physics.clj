@@ -1,8 +1,11 @@
-(ns sail.boat.physics
+(clojure.core/use 'nstools.ns)
+(ns+   sail.boat.physics
+  (:clone nstools.generic-math)
+  (:from units dimension? in-units-of)
   (:use
    [clojure.contrib.trace]
    [clojure.test :only [is deftest]]
-   [clojure.contrib.math :only [abs]]
+   ;;[clojure.contrib.math :only [abs]]
    [clojure.contrib.def :only [defnk ]]
    
    [logo.math :only [angle-diff -c +c]]
@@ -124,6 +127,7 @@
       (b-clockwise boat turn-amount)))))
 
 
+(comment
 (deftest boat-physics-test
   (is (= (boat-physics
           (mk-boat :rudder-angle 0
@@ -173,4 +177,4 @@
          (nodeps/update-managed-boat
           (nodeps/mk-managed-boat)
           {:wind-direction 180}
-          boat-physics (fn [boat sailing-environment notes] [1 notes])))))
+          boat-physics (fn [boat sailing-environment notes] [1 notes]))))))

@@ -1,4 +1,10 @@
-(ns sail.boat.tactics-estimator
+
+(clojure.core/use 'nstools.ns)
+
+
+(ns+   sail.boat.tactics-estimator
+  (:clone nstools.generic-math)
+  (:from units dimension? in-units-of)
   (:use
    [clojure.contrib.trace]
    [clojure.test :only [is deftest]]
@@ -6,6 +12,7 @@
    [logo.math :only [point-distance]]
    )
   (:require
+   [units.si  :as si]
    [sail.boat.wind :as wind]
    [sail.boat.physics :as physics]
    [sail.boat.nodeps :as nodeps]
@@ -68,7 +75,7 @@
        (assoc tp-notes s-name
               (+ 1 (get tp-notes (keyword s-name) 0)))])))
 
-(def REALLY_BIG_NUM 1000000)
+(def REALLY_BIG_NUM (* 1000000 si/m))
 (defnk mk-decreasing-distance-p [mark :dist-name (gensym)]
   "this will stop movement when we start getting farther from the mark
 in this course of action "

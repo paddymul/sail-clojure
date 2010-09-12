@@ -1,12 +1,14 @@
 (clojure.core/use 'nstools.ns)
 ;;(ns+ unit-demo
-(ns+ sail.units-play
+(ns+ sail.sail-units
   (:clone nstools.generic-math)
   (:from units dimension? in-units-of)
   (:use    [logo.draw   :only [draw-point draw-forward]]
            [logo.turtle-prim   :only [mk-turtle clockwise forward]]
            )
-  (:require
+     (:require [clojure.contrib.generic.arithmetic :as ga]
+	    [clojure.contrib.generic.comparison :as gc]
+	    [clojure.contrib.generic.math-functions :as gm]
              [units.si :as si]
              [units]
    ))
@@ -50,4 +52,4 @@
                  (raw-px dist))))
 (defn draw-point-unit [turtle]
    (draw-point (:position (raw-turtle turtle))))
-  
+

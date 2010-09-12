@@ -1,4 +1,7 @@
-(ns sail.boat.tactics
+(clojure.core/use 'nstools.ns)
+(ns+   sail.boat.tactics
+  (:clone nstools.generic-math)
+  (:from units dimension? in-units-of)
   (:use
    [clj-stacktrace.repl]
    [clojure.test :only [is deftest]]
@@ -26,9 +29,11 @@
    [logo.turtle-prim :as logot]
    [sail.boat.tactics-estimator :as te]
    [sail.boat.wind :as wind]
+   [units.si          :as si]
+   [sail.units-play    :as su]
 
    ))
-(def destination-resolution 5)
+(def destination-resolution (* si/m 5))
 
 (defn updated-heading [current-heading mark-bearing]
   "returns the angle that should be turned to point at mark "
@@ -104,8 +109,8 @@
   (let [
         closer-tack (closer-angle current-dir
                                   starboard-tack-heading port-tack-heading)
-        tack-dist-diff (cmath/abs (- starboard-tack-dist port-tack-dist))]
-    (if (> 190 tack-dist-diff)
+        tack-dist-diff (abs (- starboard-tack-dist port-tack-dist))]
+    (if (> (* si/m 190) tack-dist-diff)
       (do
 ;;        (println " chosing closer-tack" closer-tack)
         closer-tack)
@@ -298,7 +303,6 @@ us closer to the mark "
           (if (and (can-point2 dir)
                    (> 2 (cmath/abs (angle-diff dir mark-bearing))))
             (do
-  (println "if we are pointing at the mark, go towards it!")
               [0 notes])
             (do
               ;;(println "mark-bearing direction"  mark-bearing dir)

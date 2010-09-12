@@ -38,11 +38,13 @@
    ;;tac/starboard-tack
    ))
 (def boat-a (atom (nodeps/mk-managed-boat)))
+
+(comment
 (defn play []
   (doseq [a [0]];; 1 2 3 4 5 6 7 8 9 10]]
     (reset! boat-a (update-managed-boat @boat-a))))
 (play)
-
+)
 
 
 
