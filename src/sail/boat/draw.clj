@@ -34,7 +34,7 @@
 (def boat-magnification 5)
 
 (defn draw-boat-unit [boat]
-  (stroke-float 90)  ;; sets the turtle color
+  (stroke-float 250 20 20)  ;; sets the turtle color
   (stroke-weight 5)  ;; sets the turtle size
 ;;  (draw-forward-unit  boat su/five-meter)
 ;;  (println "draw-boat-unit" boat)
@@ -64,7 +64,8 @@
         (clockwise 180)
         (forward      20)
         (clockwise 270)
-        (t-stroke-float 10 10 10)
+          (t-stroke-float 250 20 20)  ;; sets the turtle color
+;;        (t-stroke-float 10 10 10)
         (clockwise (- exagerated-rudder))
         (forward       10)
         )))
