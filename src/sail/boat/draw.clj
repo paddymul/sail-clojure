@@ -25,13 +25,13 @@
   (mk-turtle :position (:position boat)
              :direction (:direction boat)))
 
-(def rudder-exageration 30)
+(def rudder-exageration -30)
 (defn t-stroke-float [turtle & args]
   (apply stroke-float args)
   turtle)
 
 
-(def boat-magnification 10)
+(def boat-magnification 5)
 
 (defn draw-boat-unit [boat]
   (stroke-float 90)  ;; sets the turtle color
@@ -46,28 +46,27 @@
         ]
     (-> (mk-turtle :position (:position boat)
                    :direction (:direction boat))
-        (draw-forward-unit (su/feet 50))
-        ;;(forward  50)
+        (forward  50)
         (clockwise 30)
-        (draw-forward-unit (su/feet 20))
+        (forward  20)
 
         (clockwise 120)
-        (draw-forward-unit      (su/feet 20))
+        (forward     20)
         (clockwise  30)
-        (draw-forward-unit      (su/feet 50))
+        (forward       50)
         (clockwise 90)
-        (draw-forward-unit      (su/feet 10))
+        (forward      10)
         (clockwise 270)
 
         (t-stroke-float 90 50 30)
         (clockwise exagerated-rudder)
-        (draw-forward-unit      (su/feet 20))
+        (forward      20)
         (clockwise 180)
-        (draw-forward-unit      (su/feet 20))
+        (forward      20)
         (clockwise 270)
         (t-stroke-float 10 10 10)
         (clockwise (- exagerated-rudder))
-        (draw-forward-unit      (su/feet 10))
+        (forward       10)
         )))
 
 
