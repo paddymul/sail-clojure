@@ -5,13 +5,13 @@
   (:use
    [logo.draw   :only [draw-point draw-forward]]
    [logo.turtle-prim   :only [mk-turtle clockwise forward]]
-   [sail.units-play    :only [draw-forward-unit]]
+   [sail.sail-units    :only [draw-forward-unit]]
    [rosado.processing :only [ stroke-weight stroke-float]]
    )
   (:require
                 [units.si          :as si]
                 [units]
-                [sail.units-play    :as su]
+                [sail.sail-units    :as su]
                 [sail.boat.nodeps  :as nodeps]
    ))
 
@@ -31,16 +31,23 @@
   turtle)
 
 
+(def boat-magnification 10)
+
 (defn draw-boat-unit [boat]
   (stroke-float 90)  ;; sets the turtle color
   (stroke-weight 5)  ;; sets the turtle size
 ;;  (draw-forward-unit  boat su/five-meter)
 ;;  (println "draw-boat-unit" boat)
-
-  (let [exagerated-rudder (* rudder-exageration (:rudder-angle boat))]
+  
+  (let [exagerated-rudder (* rudder-exageration (:rudder-angle boat))
+        forward (fn [boat dist] (draw-forward-unit
+                                 boat
+                                 (* boat-magnification (* su/feet dist))))
+        ]
     (-> (mk-turtle :position (:position boat)
                    :direction (:direction boat))
         (draw-forward-unit (su/feet 50))
+        ;;(forward  50)
         (clockwise 30)
         (draw-forward-unit (su/feet 20))
 

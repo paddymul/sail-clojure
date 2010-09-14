@@ -30,7 +30,7 @@
    [sail.boat.tactics-estimator :as te]
    [sail.boat.wind :as wind]
    [units.si          :as si]
-   [sail.units-play    :as su]
+   [sail.sail-units    :as su]
 
    ))
 (def destination-resolution (* si/m 5))
@@ -358,8 +358,12 @@ us closer to the mark "
         dir     (boat :direction)]
 ;;    (println       (notes :marks))
     ;;    (println "boat-turn sailing-environment" boat sailing-environment notes)
+
+;;    (println "boat-turn" dest pos  )
+;;    (println "boat-turn" (point-distance dest pos))
     (if (< destination-resolution
-           (point-distance dest pos))
+           (point-distance dest pos)
+           )
       ;; if we aren't at the mark
 
       (make-good-velocity  boat    sailing-environment notes )

@@ -98,6 +98,8 @@
       (assoc advanced-boat :speed 
              new-boat-speed))))
 
+
+
 (deftest acceleration-boat-physics-test
 (is (= 1 (acceleration-boat-physics
           (mk-boat :rudder-angle 0
