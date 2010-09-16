@@ -127,7 +127,7 @@
   (let [orig-boat  (:boat managed-boat)
         [rudder-angle up-notes]
             (boat-turn-fn
-               orig-boat  sailing-environment   (:notes managed-boat))
+             orig-boat  sailing-environment   (:notes managed-boat))
         bp-boat    (assoc orig-boat :rudder-angle rudder-angle)]
 ;;    (println orig-boat rudder-angle)
     (merge managed-boat

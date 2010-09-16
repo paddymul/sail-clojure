@@ -397,6 +397,62 @@ us closer to the mark "
       (straight boat sailing-environment notes )
       (te/tack-starboard boat sailing-environment notes ))))
 
+
+(defn layline-make-good-velocity [boat sailing-environment notes]
+  "this function's name is a play on velocity-made-good "
+  (let [pos     (boat :position)
+        dest    (notes :destination)
+        dir     (boat :direction)]
+
+
+    (let [mark-bearing (logot/bearing pos dest)
+          mark-boat    (assoc boat :direction mark-bearing)
+          can-we-sail  (can-sail
+                        mark-boat
+                        sailing-environment)
+          can-point2 (fn [dir]
+                       (wind/can-point dir
+                                       (:wind-direction sailing-environment)
+                                       (:pointing-angle boat)))
+          ]
+      (if can-we-sail
+          ;;(println "if we can go straight to the mark we have it easy")
+          (if (and (can-point2 dir)
+                   (> 2 (cmath/abs (angle-diff dir mark-bearing))))
+              [0 notes]
+              [(updated-heading dir mark-bearing) notes])
+          (port-tack boat sailing-environment notes)))))
+(comment
+        (do
+          (pcomment "aha life is interesting, the mark is upwind of us")
+          (let [lifted-heading (lifted-tack boat sailing-environment notes)]
+            (if (and (can-point2 dir)
+                     (> 8  (cmath/abs (angle-diff
+                                       dir lifted-heading))))
+              (do
+;;      (println "if we are on the lifted-tack now, let's go forward")
+                [0 notes])
+              (do
+;;                (println "otherwise, let's start turning towards the mark")
+                [(updated-heading dir lifted-heading) notes]
+                )))))
+
+(defn layline [boat sailing-environment notes]
+  (let [
+        pos     (boat  :position)
+        dest    (notes :destination)
+        dir     (boat :direction)]
+    (if (< destination-resolution
+           (point-distance dest pos)
+           )
+      (layline-make-good-velocity boat sailing-environment notes)
+      (do
+        (println "calling-update-marks")
+        [0 (update-marks notes)])
+
+
+      )))
+
 (comment
   I think I should make some optimize functions, these will be useful with tactics estimator
   

@@ -31,13 +31,13 @@
   turtle)
 
 
-(def boat-magnification 5)
+(def boat-magnification 2)
 
 (defn draw-boat-unit [boat]
   (stroke-float 250 20 20)  ;; sets the turtle color
   (stroke-weight 5)  ;; sets the turtle size
-;;  (draw-forward-unit  boat su/five-meter)
-;;  (println "draw-boat-unit" boat)
+  (draw-forward-unit  boat su/five-meter)
+  (println "draw-boat-unit" boat)
   
   (let [exagerated-rudder (* rudder-exageration (:rudder-angle boat))
         forward (fn [boat dist] (draw-forward-unit

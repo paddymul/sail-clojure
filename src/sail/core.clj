@@ -32,11 +32,13 @@
                              (:position
                               (nth sail.course.core/three-leg-course 0))
                              :position {:x (* 50 si/m) :y (* 850 si/m)}
+                             ;;:position
+                             ;;(nth sail.course.core/three-leg-course 1)
                              ;;:position {:x 50 :y 850}
                              ;;:direction 45
                              :speed (* 2 si/m)
                              :pointing-angle 44.5
-                             :rotation 1.1
+                             :rotation 2.1
                              :minimum-speed  (* 0.1 si/m)
                              :maximum-possible-speed (* 3.3 si/m)
                              )]

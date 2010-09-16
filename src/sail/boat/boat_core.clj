@@ -14,17 +14,7 @@
 
 
 (def sailing-environment {:wind-direction  180})
-(comment
-(defn update-managed-boat [managed-boat]
-  (nodeps/update-managed-boat
-   managed-boat
-   sailing-environment boat-physics
-   
-   boat-turn
-   ;;port-tack
-   ;;tac/starboard-tack
-   ))
-)
+
 
 (defn update-managed-boat [managed-boat]
   (nodeps/update-managed-boat
@@ -33,7 +23,9 @@
 
    ;;boat-physics
    acceleration-boat-physics
-   boat-turn
+   ;;boat-turn
+   tac/layline
+      ;;tac/starboard-tack
    ;;port-tack
    ;;tac/starboard-tack
    ))

@@ -21,7 +21,7 @@
 (def five-meter  (* 5 si/m))
 (def one-hour    (* 1 si/h))
 (units/defunit px "Pixels" (* si/m 500))
-(units/defunit px "Pixels" (* si/m 0.5))
+(units/defunit px "Pixels" (* si/m 1))
 
 (defn in-px [measurement]
   {:pre [(si/length? measurement)]}
