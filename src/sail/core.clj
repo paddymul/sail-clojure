@@ -1,71 +1,79 @@
 
- (ns sail.core
+(clojure.core/use 'nstools.ns)
+
+
+(ns+  sail.core
+  (:clone nstools.generic-math)
+  (:from units dimension? in-units-of)
+
+;;(ns sail.core
   (:use
-   ;;[rosado.processing]
-   [logo.macrology]
-   [logo.turtle]
-   [logo.turtle-prim :only [mk-turtle]]
-   [logo.draw]
-   [logo.core]
-   [logo.math]
-   [sail.boat :only [update-boat mk-boat]]
-   [rosado.processing :only [background-float point
-                             frame-count stroke-weight
-                             no-stroke stroke-float
-                             smooth
-                             ]]))
+   [clojure.contrib.trace]
+   [rosado.processing    :only [frame-count]]
+   [logo.processing-util :only [setup rerun-defapplet]])
+    (:require   [units]
 
-
-
-;; marks
-(defn make-mark [x y]
-  (atom (mk-turtle
-         :position {:x x :y y}
-         :direction 0)))
-(def marks [(make-mark 300  100)  (make-mark 100  300)  (make-mark 400  300)])  
-
-(defn draw-marks []
-  (stroke-weight 9)  ;; sets the turtle size
-  (doseq [a-mark marks]
-    (stroke-float 90 90 0)
-    (draw-turtle a-mark)))
-
-
-(def turtle-b (atom (mk-turtle :position {:x 200 :y 300} :direction 100)))
-
-(def boat-b (atom (mk-boat :destination {:x 100 :y 100}
-                           :position {:x 50 :y 250}
-                           :direction 100
-                           )))
-(def boat-a (atom (mk-boat :destination (:position @(nth marks 0))
-                           :position {:x 50 :y 850}
-                           :direction 100
-                           )))
-
-;;(def boat-a (atom (mk-turtle :position {:x 200 :y 300} :direction 100)))
-(println :start)
-(defn sail-draw []
-  
-  (background-float  90 0 20) ;; redraws the background
-  (draw-marks)
-  
-  (stroke-float 90)  ;; sets the turtle color
-  (stroke-weight 20)  ;; sets the turtle size
-  (forward! turtle-b 20)
-  ;;(draw-turtle turtle-b)
-  ;;(println ((@boat-a :turtle) :position))
-  ;;(reset! boat-a (boat-turn @boat-a))
-  (reset! boat-a (update-boat @boat-a))
-  (draw-point ((@boat-a :turtle) :position))
-  ;;(println ((@boat-a :turtle) :position)
-  ;;((@boat-a :turtle) :direction))
-  (when (> (frame-count) 1000)
-    (/ 1 0))
-
-
+                ;;[units.si  :as si]
+                [sail.sail-unitsystem  :as si]
+                [sail.boat.nodeps]
+                [sail.course.core]
+                [sail.course.draw]
+                [sail.boat.boat-core]
+                [sail.boat.draw]
+                )
+  ;;  (:require [sail.course.core])
   )
 
 
+
+(def timer (atom (* si/s 1)))
+(def time-delta (* si/s 0.3))
+(def boat-a
+     (atom
+      (let [orig-boat
+            (sail.boat.nodeps/mk-managed-boat :destination
+                             (:position
+                              (nth sail.course.core/three-leg-course 0))
+                             :position {:x (* 50 si/m) :y (* 850 si/m)}
+                             :speed (/ (si/Nm 50) (si/h 1))
+                             :direction 0
+                             :pointing-angle 44.5
+                             :rotation (/ (si/deg 360) (si/s 60))
+                             ;;:minimum-speed  (* 0.1 si/m)
+                             :minimum-speed  (/ (si/Nm 1) (si/h 1))
+                             ;;:maximum-possible-speed (* 3.3 si/m)
+                             :maximum-possible-speed (/ (si/Nm 16.3) (si/h 1))
+                             )]
+        (assoc orig-boat :notes
+               (assoc 
+                (:notes orig-boat)
+                :marks sail.course.core/three-leg-course )))))
+
+(def unit-boat (sail.boat.nodeps/mk-managed-boat
+                :rudder-angle 1
+                :position {:x (* 50 si/m) :y (* 80 si/m)}
+                :direction 190))
+
+(defn sail-draw []
+  (sail.course.draw/draw-course sail.course.core/three-leg-course)
+  
+  (reset! boat-a (sail.boat.boat-core/update-managed-boat @boat-a time-delta))
+  (reset! timer (+ @timer time-delta))
+  (sail.boat.draw/draw-boat-unit (:boat @boat-a))
+  ;;(draw-boat-unit (:boat unit-boat))
+  (when (> (frame-count) 50000)
+    (/ 1 0)))
+
+(defn run-app [] 
 (rerun-defapplet logo-play2 :title "logoemulation"
                  :size [800 800]
                  :setup setup :draw sail-draw)
+)
+(println "hello")
+(comment
+(defn play []
+  (doseq [a [0 1 2 3 4 5 6 7 8 9 10]]
+    (reset! boat-a (update-managed-boat @boat-a))))
+)
+;;(play)
+(run-app)

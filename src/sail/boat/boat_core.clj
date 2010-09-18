@@ -1,0 +1,53 @@
+(ns sail.boat.boat-core
+  (:use
+   [clojure.test :only [is deftest]]
+   [sail.boat.nodeps  :only [mk-managed-boat]]
+   [sail.boat.physics :only [boat-physics acceleration-boat-physics]]
+   [sail.boat.tactics :only [boat-turn port-tack]]
+   )
+  (:require
+   [sail.course.core]
+   [sail.boat.nodeps :as nodeps]
+   [sail.boat.tactics :as tac]
+   [sail.boat.physics :as physics]
+  ))
+
+
+
+(def sailing-environment {:wind-direction  180})
+
+
+(defn update-managed-boat [managed-boat time-delta]
+  (nodeps/update-managed-boat
+   managed-boat
+   sailing-environment
+   time-delta
+   ;;boat-physics
+   ;;acceleration-boat-physics
+   physics/timed-acceleration-boat-physics
+   ;;boat-turn
+   tac/layline
+      ;;tac/starboard-tack
+   ;;port-tack
+   ;;tac/starboard-tack
+   ))
+(def boat-a (atom (nodeps/mk-managed-boat)))
+
+(comment
+(defn play []
+  (doseq [a [0]];; 1 2 3 4 5 6 7 8 9 10]]
+    (reset! boat-a (update-managed-boat @boat-a))))
+(play)
+)
+
+
+
+
+(comment
+
+
+  eventually this should include fleet management tools
+
+  and expose course information
+
+  )
