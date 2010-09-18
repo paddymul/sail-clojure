@@ -21,6 +21,7 @@
   (:require
    [clojure.contrib.math :as cmath]
    [logo.math :as lmath]
+   [sail.sail-unitsystem  :as si]
    [logo.turtle-prim :as logot]
    [sail.boat.nodeps :as nodeps]
    ))
@@ -49,10 +50,10 @@
   "eventually this should be a property of a boat, not the global
    environment "
   (let [rel-angle (cmath/abs ang-to-wind)]
-    (cond (< rel-angle 30) -0.02
-          (< rel-angle 60) 0.01
-          (< rel-angle 120) 0.03
-          (<= rel-angle 180) 0.02)))
+    (cond (< rel-angle 30) 0.98
+          (< rel-angle 60) 1.01
+          (< rel-angle 120) 1.03
+          (<= rel-angle 180) 1.02)))
 
 (defn assure-boat-speed [boat]
   "this makes sure that the boat speed stays between the minimum boat
@@ -74,29 +75,37 @@
   ;; turn to starboard
   (let [rudder-angle (:rudder-angle boat)
         boat-rotation (:rotation boat)
-        turned-boat 
-        (if (= rudder-angle 0)    
-          boat
-        (let [turn-amount
-              (if (< 0 rudder-angle)
-                boat-rotation
-                (- 0 boat-rotation))]
-          ;;(pcomment "turn-amount" turn-amount)
-          (b-clockwise boat turn-amount)))
+        rotation-speed (if (= rudder-angle 0)
+                         (/ (si/deg 0) (si/s 1))
+                         (if (< 0 rudder-angle)
+                           boat-rotation
+                           (* -1 boat-rotation)))
         old-boat-speed (assure-boat-speed boat)
         sp (sail-power (angle-to-wind
                         (:direction boat)
                         (:wind-direction sailing-environment)))
-
-        new-boat-speed (+
-                        old-boat-speed
-                        (* old-boat-speed sp))
-        ;;blah (println "sailpower new-boat-speed" sp new-boat-speed)
+        new-boat-speed (* old-boat-speed sp)
         ]
-;;    (println "old-boat-speed" old-boat-speed new-boat-speed)
-    (let [advanced-boat (b-forward turned-boat new-boat-speed)]
+    [rotation-speed new-boat-speed]))
+
+(defn timed-acceleration-boat-physics [boat sailing-environment time-delta]
+  (let [[rotation-speed new-boat-speed]
+        (acceleration-boat-physics boat sailing-environment)
+        turn-amount  (/ (* rotation-speed time-delta) si/deg)
+        forward-amount  (* new-boat-speed time-delta)
+
+        ]
+    (println "timed " rotation-speed new-boat-speed turn-amount)
+    (let [
+            turned-boat (b-clockwise boat turn-amount)]
+      (assoc  (b-forward turned-boat forward-amount)   :speed new-boat-speed))))
+    
+        
+
+
+(comment        (let [advanced-boat (b-forward turned-boat new-boat-speed)]
       (assoc advanced-boat :speed 
-             new-boat-speed))))
+             new-boat-speed)))
 
 
 

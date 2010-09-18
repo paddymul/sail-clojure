@@ -9,19 +9,21 @@
      (:require [clojure.contrib.generic.arithmetic :as ga]
 	    [clojure.contrib.generic.comparison :as gc]
 	    [clojure.contrib.generic.math-functions :as gm]
-             [units.si :as si]
+            [sail.sail-unitsystem  :as si]
+;;             [units.si :as si]
              [units]
    ))
 
 
-(units/defunit Nm "NauticalMile" (* si/m 1852))
-(units/defunit feet "feet"       (* si/m 0.3048))
 
-(def three-knots (* 3 Nm))
+(def three-knots (* 3 si/Nm))
 (def five-meter  (* 5 si/m))
 (def one-hour    (* 1 si/h))
 (units/defunit px "Pixels" (* si/m 500))
 (units/defunit px "Pixels" (* si/m 1))
+;;(units/defdimension revs "rpm" rpm [si/angle 1 time -1])
+
+
 
 (defn in-px [measurement]
   {:pre [(si/length? measurement)]}

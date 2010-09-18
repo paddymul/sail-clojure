@@ -7,7 +7,7 @@
        [logo.turtle-prim :only [mk-turtle]]
        )
       (:require
-                [units.si          :as si]
+       [sail.sail-unitsystem  :as si]
                 [units]
    ))
 

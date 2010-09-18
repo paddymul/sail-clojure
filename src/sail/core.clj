@@ -13,7 +13,8 @@
    [logo.processing-util :only [setup rerun-defapplet]])
     (:require   [units]
 
-                [units.si  :as si]
+                ;;[units.si  :as si]
+                [sail.sail-unitsystem  :as si]
                 [sail.boat.nodeps]
                 [sail.course.core]
                 [sail.course.draw]
@@ -25,6 +26,8 @@
 
 
 
+(def timer (atom (* si/s 1)))
+(def time-delta (* si/s 0.3))
 (def boat-a
      (atom
       (let [orig-boat
@@ -32,25 +35,20 @@
                              (:position
                               (nth sail.course.core/three-leg-course 0))
                              :position {:x (* 50 si/m) :y (* 850 si/m)}
-                             ;;:position
-                             ;;(nth sail.course.core/three-leg-course 1)
-                             ;;:position {:x 50 :y 850}
-                             ;;:direction 45
-                             :speed (* 2 si/m)
+                             :speed (/ (si/Nm 50) (si/h 1))
+                             :direction 0
                              :pointing-angle 44.5
-                             :rotation 2.1
-                             :minimum-speed  (* 0.1 si/m)
-                             :maximum-possible-speed (* 3.3 si/m)
+                             :rotation (/ (si/deg 360) (si/s 60))
+                             ;;:minimum-speed  (* 0.1 si/m)
+                             :minimum-speed  (/ (si/Nm 1) (si/h 1))
+                             ;;:maximum-possible-speed (* 3.3 si/m)
+                             :maximum-possible-speed (/ (si/Nm 16.3) (si/h 1))
                              )]
         (assoc orig-boat :notes
                (assoc 
                 (:notes orig-boat)
-                :marks sail.course.core/three-leg-course ))
+                :marks sail.course.core/three-leg-course )))))
 
-        ))
-
-     )
-;;(* 3 si/m)
 (def unit-boat (sail.boat.nodeps/mk-managed-boat
                 :rudder-angle 1
                 :position {:x (* 50 si/m) :y (* 80 si/m)}
@@ -58,7 +56,9 @@
 
 (defn sail-draw []
   (sail.course.draw/draw-course sail.course.core/three-leg-course)
-  (reset! boat-a (sail.boat.boat-core/update-managed-boat @boat-a))
+  
+  (reset! boat-a (sail.boat.boat-core/update-managed-boat @boat-a time-delta))
+  (reset! timer (+ @timer time-delta))
   (sail.boat.draw/draw-boat-unit (:boat @boat-a))
   ;;(draw-boat-unit (:boat unit-boat))
   (when (> (frame-count) 50000)

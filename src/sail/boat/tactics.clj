@@ -29,7 +29,8 @@
    [logo.turtle-prim :as logot]
    [sail.boat.tactics-estimator :as te]
    [sail.boat.wind :as wind]
-   [units.si          :as si]
+   [sail.sail-unitsystem  :as si]
+
    [sail.sail-units    :as su]
 
    ))

@@ -9,9 +9,9 @@
    [rosado.processing :only [ stroke-weight stroke-float]]
    )
   (:require
-                [units.si          :as si]
-                [units]
-                [sail.sail-units    :as su]
+   [sail.sail-unitsystem  :as si]
+   [units]
+   [sail.sail-units    :as su]
                 [sail.boat.nodeps  :as nodeps]
    ))
 
@@ -36,13 +36,12 @@
 (defn draw-boat-unit [boat]
   (stroke-float 250 20 20)  ;; sets the turtle color
   (stroke-weight 5)  ;; sets the turtle size
-  (draw-forward-unit  boat su/five-meter)
-  (println "draw-boat-unit" boat)
+  ;;(draw-forward-unit  boat si/five-meter)
   
   (let [exagerated-rudder (* rudder-exageration (:rudder-angle boat))
         forward (fn [boat dist] (draw-forward-unit
                                  boat
-                                 (* boat-magnification (* su/feet dist))))
+                                 (* boat-magnification (* si/feet dist))))
         ]
     (-> (mk-turtle :position (:position boat)
                    :direction (:direction boat))

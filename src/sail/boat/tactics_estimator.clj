@@ -1,4 +1,3 @@
-
 (clojure.core/use 'nstools.ns)
 
 
@@ -12,7 +11,7 @@
    [logo.math :only [point-distance]]
    )
   (:require
-   [units.si  :as si]
+   [sail.sail-unitsystem  :as si]
    [sail.boat.wind :as wind]
    [sail.boat.physics :as physics]
    [sail.boat.nodeps :as nodeps]
@@ -42,9 +41,9 @@
                          boat-thinking-fn
                          termination-predicate termination-predicate-notes]
   (let [new-boat (nodeps/update-managed-boat
-                  managed-boat sailing-environment
+                  managed-boat sailing-environment (si/s 1)
                   ;;physics/boat-physics boat-thinking-fn)
-                  physics/acceleration-boat-physics boat-thinking-fn)
+                  physics/timed-acceleration-boat-physics boat-thinking-fn)
         [should-terminate new-tp-notes]
         (termination-predicate new-boat sailing-environment
                                termination-predicate-notes)]
@@ -66,7 +65,8 @@
   (defn make-count-predicate [count]
     (fn [managed-boat sailing-environment tp-notes]
       [(< count  (:count tp-notes))
-       (assoc tp-notes :count (+ 1 (:count tp-notes)))]))
+       (assoc tp-notes :count (+ 1 (:count tp-notes)))
+       ]))
   )
 (defnk make-count-predicate [count :cname (gensym)]
   (let [s-name (keyword (str "count" (name cname)))]
@@ -216,7 +216,7 @@ in this course of action "
 
 
 
-
+(comment
 (sail-instructions (nodeps/mk-managed-boat)
                    {:wind-direction 180}
                    (make-count-predicate 200)
@@ -246,3 +246,4 @@ in this course of action "
                                (make-count-predicate 200)
                                straight-instructions)))))
 
+)

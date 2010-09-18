@@ -8,7 +8,8 @@
   (:require
    [sail.course.core]
    [sail.boat.nodeps :as nodeps]
-  [sail.boat.tactics :as tac]
+   [sail.boat.tactics :as tac]
+   [sail.boat.physics :as physics]
   ))
 
 
@@ -16,13 +17,14 @@
 (def sailing-environment {:wind-direction  180})
 
 
-(defn update-managed-boat [managed-boat]
+(defn update-managed-boat [managed-boat time-delta]
   (nodeps/update-managed-boat
    managed-boat
    sailing-environment
-
+   time-delta
    ;;boat-physics
-   acceleration-boat-physics
+   ;;acceleration-boat-physics
+   physics/timed-acceleration-boat-physics
    ;;boat-turn
    tac/layline
       ;;tac/starboard-tack

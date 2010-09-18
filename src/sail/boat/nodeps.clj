@@ -120,8 +120,9 @@
   )
 
 
-(defn update-managed-boat [managed-boat
-                           sailing-environment  boat-physics-fn boat-turn-fn]
+(defn update-managed-boat [managed-boat 
+                           sailing-environment time-delta
+                           boat-physics-fn boat-turn-fn]
   " this function keeps boat-turn from cheating,  boat cheating gets all the relevent information about its' boat, but it only returns rudder-angle, we merge rudder-angle outside of boat turn, thus boat turn can't put a boat at the finish just because it wants to"
 
   (let [orig-boat  (:boat managed-boat)
@@ -131,7 +132,7 @@
         bp-boat    (assoc orig-boat :rudder-angle rudder-angle)]
 ;;    (println orig-boat rudder-angle)
     (merge managed-boat
-           {:boat (boat-physics-fn bp-boat sailing-environment)
+           {:boat (boat-physics-fn bp-boat sailing-environment time-delta)
             :notes up-notes})))
 
 (defn mk-turtle [boat]
