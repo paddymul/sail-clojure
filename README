@@ -1,17 +1,36 @@
 # sail
 
-FIXME: write description
+This is my attempt at a sailing tactics simulator.  It is in a state of flux and is not idiomatic clojure code.
+
+This is not a video game, but an exploration of AI for  racing sailing tactics
+
+the really interesting files are boat.physics where I implement my
+physics model.  Note I know that there is alot that I can do to make
+the physics more accurate, it will get there.
+
+the other interesting file is boat.tactics
+
+the program basically works by telling the tactics function the
+current state of the world.  the tactics function then returns the
+rudder-angle, and notes, the notes are passed back to the tactics
+function the next time it is called.  a boat physics function updates
+the position of the boat.  By separating concerns in this way, the
+tactics function cannot cheat.
 
 ## Usage
 
-FIXME: write
+run lein swank
+compile/run sail.core.  you will see an animation
 
 ## Installation
 
-FIXME: write
+This depends on units  and clj-logo
+
 
 ## License
 
-Copyright (C) 2010 FIXME
+I'm not sure yet.  I'm just having fun for now.  If you have suggestions, contact me
 
-Distributed under the Eclipse Public License, the same as Clojure.
+paddy@chartwidget.com
+
+
