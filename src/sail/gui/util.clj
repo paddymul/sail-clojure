@@ -4,6 +4,7 @@
 
 (import '(javax.swing JFrame JLabel JTextField JButton JComboBox JPanel Timer)
         '(java.awt.event ActionListener)
+        '(javax.swing.event ChangeListener)
         '(java.awt GridLayout))
 
 (defmacro set-grid! [constraints field value]
@@ -33,6 +34,11 @@
   `(. ~component addActionListener
       (proxy [java.awt.event.ActionListener] []
         (actionPerformed [~event] ~@body))))
+(defmacro with-change-listener [component event & body]
+  `(. ~component addChangeListener
+      (proxy [javax.swing.event.ChangeListener] []
+        (stateChanged [~event] ~@body))))
+  
 (import '(javax.swing JPanel JFrame JButton JTextField
                       JLabel Timer SwingUtilities))
 
@@ -80,82 +86,14 @@
         ]
     (.size applet width height mode)
     applet))
+    
+(defmacro mk-monitor [monitor-name & what-to-monitor]
+  `(let [monitor-field# (text-field ~monitor-name)
+         timer# (Timer. 100 nil)]
+     (doto timer#
+       (.start)
+       (with-action e#
+         (.setText monitor-field# (str ~@what-to-monitor))))
+     monitor-field#
+     ))
 
-(comment
-  
-
-(defn new-flipper []
-  (agent {:total 0, :heads 0,
-          :running false,
-          :random (java.util.Random.)}))
-
-
-(defn calculate [state]
-  (if (:running state)
-    (do (send *agent* calculate)
-        (assoc state
-          :total (inc (:total state))
-          :heads (if (.nextBoolean (:random state))
-                   (inc (:heads state))
-                   (:heads state))))
-    state))
-(defn start [state]
-  (send *agent* calculate)
-  (assoc state :running true))
-
-(defn stop2 [state]
-  (assoc state :running false))
-(defn error [state]
-  (if (zero? (:total state)) 0.0
-      (- (/ (double (:heads state))
-            (:total state))
-         0.5)))
-
-  (defn flipper-app []
-  ;; Construct components:
-  (let [flipper (new-flipper)
-        b-start (JButton. "Start")
-        b-stop (doto (JButton. "Stop")
-                 (.setEnabled false))
-        total (text-field "0")
-        heads (text-field "0")
-        t-error (text-field "0.0")
-        timer (Timer. 100 nil)]
-
-    ;; Setup actions:
-    (with-action timer e
-      (let [state @flipper]
-        (.setText total (str (:total state)))
-        (.setText heads (str (:heads state)))
-        (.setText t-error (format "%.10g" (error state)))))
-    (with-action b-start e
-      (send flipper start)
-      (.setEnabled b-stop true)
-      (.setEnabled b-start false)
-      (.start timer))
-    (with-action b-stop e
-      (send flipper stop)
-      (.setEnabled b-stop false)
-      (.setEnabled b-start true)
-      (.stop timer))
-
-    ;; Create window and layout:
-    (doto (JFrame. "logoemulation")
-      (.setContentPane
-       (doto (JPanel.)
-         (.add (JLabel. "Total:"))
-         (.add total)
-         (.add (JLabel. "Heads:"))
-         (.add heads)
-         (.add (JLabel. "Error:"))
-         (.add t-error)
-         (.add b-start)
-         (.add b-stop)))
-      (.pack)
-      (.setVisible true))))
-
-
-(do (doto-symbol flipper-app-sym kill-frame)
-    (def flipper-app-sym (flipper-app)))
-
-)
